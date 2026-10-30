@@ -50,7 +50,7 @@
 - Notice the size (~1 GB+ on `node:22`). Making it small is project 4.
 - ✅ Checkpoint: you can point at the biggest layers and say where they come from.
 
-## Step 8 — Cleanup + cheat sheet
+## Step 8 — Cleanup + cheat sheet ✔ DONE
 - Remove lesson containers, check `docker system df`, write `CHEATSHEET.md` (Dockerfile instructions + build/cache commands) in your own words.
 - ✅ Checkpoint: "Done when" boxes above are ticked.
 
@@ -110,8 +110,15 @@
 - Mistake: `docker tag api ...` → `api` is the CONTAINER name; tags are for IMAGES (`docker images` vs `docker ps`). No `docker ls` → `docker image ls` / `docker container ls`.
 - `docker tag my-api my-api:1.0` → same IMAGE ID as `latest`: a tag is just a label pointing at an image, no copy. The next build moves `latest`, `1.0` stays → rollback.
 ### Step 8
+- Removed lesson containers (`docker ps -a` empty). Kept `my-api:latest` / `my-api:1.0`. `docker system df`: build cache ~3GB, so `docker builder prune` is worth knowing.
+- Wrote `CHEATSHEET.md`: 16 questions answered in my own words + command table.
 
 ---
 
 ## Summary
-_(written at the end)_
+- Wrote my own `Dockerfile` for NestJS: `FROM node:24` → `WORKDIR /app` → `COPY package*.json` → `RUN npm ci` → `COPY . .` → `RUN npm run build` → `CMD npm run start:prod`. Both "Done when" criteria met.
+- Core ideas: `RUN` = build time (a layer), `CMD` = start time. `.dockerignore` keeps the build context small. Order layers from rarely changed to often changed so the cache works (15.5s → 3.3s).
+- `EXPOSE` = documentation only, `-p host:container` publishes. The container side = the port the app really listens on.
+- Office proxy: CA cert passed as a BuildKit secret, never stored in the image.
+- Image is ~1.9GB (base image build tools + node_modules); shrinking it = project 4.
+- Next topic suggestion: Docker Compose. Run the app + Postgres together, container DNS (`postgres` hostname), `.env`, named volumes. Compose builds will need the CA secret in `docker-compose.yml`.

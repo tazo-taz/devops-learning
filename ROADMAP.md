@@ -7,8 +7,8 @@ Each project builds on the one before. All use **NestJS + PostgreSQL**, so in th
 | #  | Project                              | Level        | Folder                  | Status        |
 |----|--------------------------------------|--------------|-------------------------|---------------|
 | 1  | Docker basics (no code)              | Beginner     | `01-docker-basics/`     | ✅ 2026-10-29 |
-| 2  | Dockerize a NestJS app               | Beginner     | `02-dockerize-nestjs/`  | ⏳ next       |
-| 3  | NestJS + Postgres with Docker Compose| Beginner     | `03-compose-postgres/`  | ⬜            |
+| 2  | Dockerize a NestJS app               | Beginner     | `02-dockerize-nestjs/`  | ✅ 2026-10-30 |
+| 3  | NestJS + Postgres with Docker Compose| Beginner     | `03-compose-postgres/`  | ⏳ next       |
 | 4  | Production-ready images              | Junior       | `04-prod-images/`       | ⬜            |
 | 5  | Dev vs. prod environments            | Junior       | `05-dev-vs-prod/`       | ⬜            |
 | 6  | Nginx reverse proxy + multiple services | Junior    | `06-nginx-proxy/`       | ⬜            |
