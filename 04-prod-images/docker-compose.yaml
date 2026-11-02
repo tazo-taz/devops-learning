@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16 # the same Postgres version you used in project 1
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432" # host:container
+    volumes:
+      - pgdata:/var/lib/postgresql/data # where Postgres keeps its data inside the container
+  api:
+    build:
+      context: api
+      secrets:
+        - ca
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+      DB_PORT: 5432
+volumes:
+  pgdata:
+secrets:
+  ca: # same name as in the api secrets list
+    file: /usr/local/share/ca-certificates/MIA-ROOT-CA.crt
