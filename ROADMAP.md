@@ -9,8 +9,8 @@ Each project builds on the one before. All use **NestJS + PostgreSQL**, so in th
 | 1  | Docker basics (no code)              | Beginner     | `01-docker-basics/`     | ✅ 2026-10-29 |
 | 2  | Dockerize a NestJS app               | Beginner     | `02-dockerize-nestjs/`  | ✅ 2026-10-30 |
 | 3  | NestJS + Postgres with Docker Compose| Beginner     | `03-compose-postgres/`  | ✅ 2026-10-30 |
-| 4  | Production-ready images              | Junior       | `04-prod-images/`       | ⏳ next       |
-| 5  | Dev vs. prod environments            | Junior       | `05-dev-vs-prod/`       | ⬜            |
+| 4  | Production-ready images              | Junior       | `04-prod-images/`       | ✅ 2026-11-03 |
+| 5  | Dev vs. prod environments            | Junior       | `05-dev-vs-prod/`       | ⏳ next       |
 | 6  | Nginx reverse proxy + multiple services | Junior    | `06-nginx-proxy/`       | ⬜            |
 | 7  | CI/CD with GitHub Actions            | → Mid        | `07-ci-cd/`             | ⬜            |
 | 8  | Deploy to a real server              | → Mid        | `08-deploy-vps/`        | ⬜            |
@@ -22,7 +22,7 @@ Folder names are planned; create each when the project starts.
 ## How every project is learned
 1. **Warm-up**: 3 recall questions from the last project and `REVIEW.md`, without notes.
 2. **Steps**: predict first, then run it, then explain *why* it worked.
-3. **Break it**: something gets broken on purpose; I find it with symptom → look → guess → test → fix.
+3. **Break it**: something gets broken on purpose; I find it with symptom → look → guess → test → fix. A small 🔨 mini break-it closes every step (two for a hard step), plus one bigger Break it step near the end.
 4. **Solo run**: the core flow from scratch, no notes.
 5. **Cheat sheet**: questions on this project plus review questions from my old mistakes (`REVIEW.md`).
 

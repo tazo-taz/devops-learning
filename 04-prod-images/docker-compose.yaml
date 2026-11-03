@@ -1,6 +1,11 @@
 services:
   postgres:
     image: postgres:16 # the same Postgres version you used in project 1
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -15,7 +20,8 @@ services:
       secrets:
         - ca
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     ports:
       - "3000:3000"

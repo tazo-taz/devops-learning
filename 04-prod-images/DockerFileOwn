@@ -1,0 +1,16 @@
+image node:alpine as build
+workdir /app
+copy package*.json
+run with certificate npm ci
+copy *
+run npm run build
+
+image node:alpine
+workdir /app
+copy package*.json
+run with certificate npm ci --omit=dev
+copy from=build dist dist
+run mkdir uploads && chrown node:node uploads
+User node
+add healthcheck interval 10s timeout 3s start after 10s and node -e fetch("localhost:3000/health").then(e => process.exit(e.ok ? 0 : 1)).catch(() => process.exit(1))
+cmd node dist/main
