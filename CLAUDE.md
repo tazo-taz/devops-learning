@@ -19,6 +19,10 @@ Based on learning research (retrieval practice, spacing, interleaving, elaborati
 - **Solo run**: doing the core flow once without notes is the real test.
 Keep all of this light: one question, not a lecture. If the user doesn't know, that's fine, explain and move on.
 
+## Answer length
+- When the user asks a question, answer it SHORT (1–3 sentences). Only when they say "explain" give a full explanation.
+- Make it clear whether a question is hypothetical (a scenario to think about) or about something Claude actually changed in the files.
+
 ## Mistake tracking (`REVIEW.md`)
 - `REVIEW.md` at the workspace root = one log of every mistake/misconception across all projects (ID, topic, mistake, project, asked in, streak).
 - Whenever the user hits a mistake (wrong command, wrong mental model, a cheat sheet answer that gets a 💡), add a `- Mistake:` note in that project's PLAN.md **and** a row in `REVIEW.md` (or reset the existing row's streak to 0 if it's the same mistake again).
@@ -32,7 +36,7 @@ When the user starts a project (from `ROADMAP.md` or a pasted description):
    - Each step gets a `- 🤔 Predict:` line: one question the user answers before running anything (e.g. "what will `curl` return if postgres is stopped?").
    - Each ✅ checkpoint includes a "why" the user explains in their own words, not only "it works".
    - A **Break it** step near the end (take the scenarios from the project's "Break it" line in `ROADMAP.md`): Claude breaks something without saying what (or names only the symptom), the user debugs with the loop symptom → look (logs/ps/inspect) → guess → test → fix → explain. No hints for the first few minutes.
-   - **Mini break-its 🔨** at the end of EVERY step (after its ✅ checkpoint): one per step, two for a hard/big step. Claude quietly breaks one small thing in it (rebuilds/restarts if needed) and gives only the symptom. 2–5 min each, same loop (symptom → look → guess → test → fix → explain). Mark them in PLAN.md as `- 🔨 Mini break-it:` lines inside the step. The user asked for this on 2026-11-02 (project 04) because these challenges are the most fun part (first "every 2–3 steps", then "one after every step"). Tip: the user's editor shows Claude's file edits, so prefer breaks they must find with Docker tools (ask them to keep the files closed until they've looked with `ps`/`logs`/`inspect`). The big **Break it** step stays, with the ROADMAP scenarios not used as mini ones.
+   - **Mini break-its 🔨** at the end of EVERY step (after its ✅ checkpoint): one per step, two for a hard/big step. Claude quietly breaks one small thing in it (rebuilds/restarts if needed) and gives only the symptom. 2–5 min each, same loop (symptom → look → guess → test → fix → explain). Mark them in PLAN.md as `- 🔨 Mini break-it:` lines inside the step. The user asked for this on 2026-11-02 (project 04) because these challenges are the most fun part (first "every 2–3 steps", then "one after every step"). When the user finds the cause, do NOT give the fix or the commands: let them fix and explain it themselves; only answer "correct / not yet" and hint if they ask (user asked 2026-11-03). Tip: the user's editor shows Claude's file edits, so prefer breaks they must find with Docker tools (ask them to keep the files closed until they've looked with `ps`/`logs`/`inspect`). The big **Break it** step stays, with the ROADMAP scenarios not used as mini ones.
    - A **Solo run** step: the user does the project's core flow from scratch without notes; Claude only watches. Note what they had to look up → `REVIEW.md`.
 2. Do NOT do everything at once. Go one step at a time together with the user:
    - ask the 🤔 Predict question first, then explain the concept briefly (junior level, plain language),

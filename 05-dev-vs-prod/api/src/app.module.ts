@@ -15,7 +15,7 @@ import { UsersModule } from './users/users.module.js';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       autoLoadEntities: true, // pick up entities from modules (step 6)
-      synchronize: true, // auto-create tables. Learning only! Real migrations = project 5
+      synchronize: false, // tables come from migrations now (npm run migration:run)
     }),
     UsersModule,
   ],

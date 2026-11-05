@@ -5,7 +5,11 @@ RUN --mount=type=secret,id=ca,target=/tmp/ca.crt \
     NODE_EXTRA_CA_CERTS=/tmp/ca.crt npm ci
 COPY . .
 RUN npm run build
-FROM node:24-alpine
+
+FROM build AS dev
+CMD ["npm", "run", "start:dev"]
+
+FROM node:24-alpine AS prod
 WORKDIR /app
 COPY package*.json ./
 RUN --mount=type=secret,id=ca,target=/tmp/ca.crt \

@@ -10,8 +10,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5432:5432" # host:container
     volumes:
       - pgdata:/var/lib/postgresql/data # where Postgres keeps its data inside the container
   api:
@@ -22,7 +20,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: unless-stopped
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "3000:3000"
     environment:
@@ -31,6 +30,22 @@ services:
       DB_NAME: ${DB_NAME}
       DB_HOST: postgres
       DB_PORT: 5432
+  migrate:
+    build:
+      context: api
+      secrets:
+        - ca
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+      DB_PORT: 5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["npm", "run", "migration:run"]
+
 volumes:
   pgdata:
 secrets:
