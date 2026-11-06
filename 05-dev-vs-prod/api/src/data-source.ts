@@ -2,7 +2,6 @@
 // The CLI runs outside Nest, so it needs its own DB connection settings.
 import { DataSource } from 'typeorm';
 import { User } from './users/user.entity.js';
-import { InitUsers1793865600000 } from './migrations/1793865600000-InitUsers.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -12,7 +11,8 @@ export default new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   entities: [User],
-  // every migration class, oldest first; new migrations get added here
-  migrations: [InitUsers1793865600000],
+  // load every compiled migration next to this file (dist/migrations/*.js),
+  // so a new migration file is picked up without editing this list
+  migrations: [`${import.meta.dirname}/migrations/*.js`],
   synchronize: false,
 });

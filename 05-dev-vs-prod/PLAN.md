@@ -4,7 +4,7 @@
 **You learn:** bind mounts vs. volumes, compose overrides (merging several `-f` files), and environment-specific config.
 **Done when:**
 - [x] I edit code on my PC and the dev container reloads by itself (no rebuild)
-- [ ] (extra) prod setup runs the small image, no bind mounts, no pgAdmin; migrations create the tables (no more `synchronize: true`)
+- [x] (extra) prod setup runs the small image, no bind mounts, no pgAdmin; migrations create the tables (no more `synchronize: true`)
 
 > From project 4: one small multi-stage image (alpine, `USER node`, `HEALTHCHECK`, node = PID 1), compose waits for a healthy Postgres.
 > Problem now: every code change = `up -d --build` (rebuild, ~30 s+). Fine for prod, painful for dev. And tables are created by `synchronize: true`, which is unsafe in prod (it can drop columns).
@@ -53,22 +53,22 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - ✅ Checkpoint: you see users in pgAdmin. Why: why isn't the host `localhost` here, but IS `localhost` in the browser URL?
 - 🔨 Mini break-it: ✔ port mapping changed to `5050:8080` → connection reset, container `Up`.
 
-## Step 6 — Migrations on startup
+## Step 6 — Migrations on startup ✔ DONE
 - Concept: `synchronize: true` changes tables to match the code, silently, every start (can drop a column = data loss). Migrations = versioned SQL files, run once, recorded in a `migrations` table. Claude writes the Nest/TypeORM part (data source + first migration); you wire it into compose: a one-shot `migrate` service + `api` `depends_on: migrate: condition: service_completed_successfully`.
 - 🤔 Predict: you run the migration twice. What happens the second time, and how does TypeORM know?
 - Commands: `docker compose ... run --rm migrate`, `docker compose ... ps -a` (`Exited (0)`), `psql ... -c 'SELECT * FROM migrations;'`, `down -v` + `up` on an empty DB.
 - ✅ Checkpoint: empty DB → `up` → tables exist, api healthy. Why: why a separate one-shot service instead of running migrations inside every api container (think: 3 api replicas in project 6/10)?
-- 🔨 Mini break-it: (Claude picks, symptom only)
-- 🔨 Mini break-it 2: (Claude picks, symptom only)
+- 🔨 Mini break-it: ✔ `user` table dropped by hand, `InitUsers` row still in `migrations` → `/health` db up, `/users` 500.
+- 🔨 Mini break-it 2: ✔ `05-dev-vs-prod-migrate` tag moved onto project 4's image → `service "migrate" didn't complete successfully: exit 1`, api never starts.
 
-## Step 7 — Prod run + environment config
+## Step 7 — Prod run + environment config ✔ DONE
 - Concept: prod = final image, no bind mounts, no pgAdmin, no exposed Postgres port, `restart:`, `NODE_ENV=production`. Different values per environment via `env_file:` / `--env-file` (`.env.dev` vs `.env.prod`), never baked into the image.
 - 🤔 Predict: you start prod while the dev stack is still up, same folder. What happens to the containers (same project name!)?
 - Commands: `docker compose -f docker-compose.yaml -f docker-compose.prod.yml up -d --build`, `docker compose ps`, `docker inspect ... .Mounts`, `docker images`, `curl`.
 - ✅ Checkpoint: Done when #2. Why: name 3 differences between dev and prod and the reason for each.
-- 🔨 Mini break-it: (Claude picks, symptom only)
+- 🔨 Mini break-it: ✔ plain `docker run` container `cache-warmer` holding host port 3000 → prod `up`: `Bind for 0.0.0.0:3000 failed: port is already allocated`.
 
-## Step 8 — Break it
+## Step 8 — Break it ✔ DONE
 - Claude breaks things from `ROADMAP.md`: the bind mount hides `node_modules`, a failing migration on startup, the wrong override file used. Only the symptom is given.
 - Loop: symptom → look (`logs`, `ps -a`, `config`, `inspect .Mounts`) → guess → test → fix → explain. No hints for the first few minutes.
 - ✅ Checkpoint: each one fixed and explained in your own words.
@@ -139,9 +139,35 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Fix: dev test data → `down -v` (R19: OK because I WANT it empty). Thought `docker volume prune` (no: only removes volumes no container uses, and only anonymous by default) → needed the command → R19. With real data: baseline = insert the migration's row into `migrations` by hand (after checking the schema matches + `pg_dump` backup).
 - First `down` didn't remove the volume (no `-v` applied): `volume inspect` CreatedAt = yesterday + postgres log `Skipping initialization` → same old tables. After a real `down -v`: new volume, migrate `Exited (0)`, `migrations` has `InitUsers`, api `Up`, `/health` db up. Done when #2 (migrations part) ✓.
 - Learned: before today no migrations existed; sync never lost data only because the entity never changed (rename a column → sync drops + re-adds = data gone). First migration = whole current schema, then one small migration per change (`migration:generate` writes it).
-- ⏸ Paused 2026-11-05 here: next = Step 6 checkpoint why (separate migrate service vs. migrations in every api replica), then 2 mini break-its, then Step 7 (prod). Optional: switch to `COMPOSE_FILE` / `compose.override.yaml` to stop typing `-f`.
+- Checkpoint (correct): 3 replicas = 3 migration runs at the same time → race (two of them see the migration as pending, both run CREATE TABLE, one crashes). One-shot service = migrate ONCE, then start the apps (`service_completed_successfully`); a failed migration also stops the api from starting on a half-changed schema.
+- 🔨 Mini break-it 1: Claude ran `DROP TABLE "user"` (no file change). `/health` db up (only checks the connection), `/users` 500. Found it: no `user` table, but `migrations` still lists `InitUsers`. Predicted right: re-running migrate → `No migrations are pending` (TypeORM trusts the `migrations` table, not the real tables). Asked whether to delete "the migration" → the ROW in `migrations`, not the file. Deleted the row + ran migrate → table back (new row id 2), `/users` → `[]`. Why `/health` said db up (correct): it only checks the connection to Postgres, not the tables/migrations. Prod version of this: don't re-run migrations (they only build empty structure), restore from a backup.
+- 🔨 Mini break-it 2: Claude ran `docker tag 04-prod-images-api 05-dev-vs-prod-migrate` + `down`/`up`. `logs migrate` → missing script `migration:run`. Tried `exec sh` (no service name + migrate already exited → R21) → `run --rm migrate cat package.json`: no migration scripts in the IMAGE (my `api/package.json` was fine). Guessed "build issue" (close: wrong image, not a broken build). api vs migrate having different IDs is normal (dev target vs last stage). Found: migrate's ID = `04-prod-images-api`, created 3 days ago. Fix: rebuild (`up -d --build`) → new migrate image, `Exited (0)`, api Up, `/users` → `[]`.
+- Asked: `-p 05-dev-vs-prod` instead of the `-f`s? No: `-p` = project name only, still reads only the base file. To stop typing: `COMPOSE_FILE=docker-compose.yaml:docker-compose.dev.yaml` in `.env`.
+- Added `COMPOSE_FILE=docker-compose.yaml:docker-compose.dev.yaml` to `.env` (Claude did it) → plain `docker compose ...` = dev; `config --services` now lists pgadmin. Gotcha: `.env` had no newline at the end, so the appended line got glued onto `DB_NAME=app` → fixed. Always end text files with a newline.
 ### Step 7
+- Predict (half right): same project name → ONE set of containers, but the prod `up` replaces the running dev ones (not the other way around). api → `node dist/main`, Mounts `[]`; postgres recreated without the 5432 publish.
+- pgAdmin kept running = **orphan** (in the project, but not in the current files); compose only warns `Found orphan containers`. Removed it with `--remove-orphans` (or `down` before switching). Then `docker ps` = api + postgres only, both healthy. Done when #2 ✓.
+- Found: `NODE_ENV` isn't set anywhere yet (empty in the prod container). Added `NODE_ENV: production` under api `environment:` in the prod override (dev config doesn't get it).
+- Thought env changes need a rebuild: no, env is set when the container is CREATED (not in the image) → `up -d` recreates it.
+- Mistake: ran `up` WITHOUT `-f` → `COMPOSE_FILE` in `.env` = dev → dev came back (pgadmin, `start:dev`, bind mount), still no NODE_ENV. The container label `com.docker.compose.project.config_files` shows which files made it. Prod always needs both `-f` (they override `COMPOSE_FILE`). → R33
+- 🔨 Mini break-it: found `cache-warmer` (plain `docker run`, so `compose down` can't remove it → `docker rm -f`). Explained (correct): inside, every container has its own network, so many can listen on 3000; the HOST port 3000 can belong to only one.
+- Side effect: the api container created during the failed `up` had broken networking → `3000/tcp` (nothing published) + `EAI_AGAIN postgres` (not on the network). Yaml was fine; ports/networks are set at CREATE time → fixed by recreating (`up --build` made a new container). Lesson: after a failed `up`, compare `config` (should) with `ps`/`inspect` (got); recreate (`--force-recreate` or `down` + `up`).
+- Prod check: api `node dist/main`, healthy, `NODE_ENV=production`, no mounts, postgres not published, no pgadmin.
+- Checkpoint: (1) prod `node dist/main` vs dev `start:dev` watch: watch needs dev deps (big image) and rebuilds on file changes; prod has no source to watch ✓. (2) Postgres not published in prod: only reachable inside the compose network, nothing public ✓. (3) pgAdmin only in dev: said "in prod wouldn't be an issue" → it is: an extra login page with full DB access (default `admin/admin`) = a door attackers try. Good idea though: open it only when needed, only locally (SSH tunnel / compose `profiles`). → R37
 ### Step 8
+- Note: a break command was visible in the terminal → scenario redone; Claude now says "🙈 don't look at the next tool call" before breaks (commands stay readable).
+- Scenario 1 ✔ failing migration on startup: a "teammate's" migration `ALTER TABLE "user" ADD "age" integer NOT NULL` + an existing row (Ana) → migrate `Exited (1)` (`contains null values`) → api never starts. Found it myself: existing rows have no age → make it nullable or add a DEFAULT. Works on an empty DB = "works on my machine".
+- Edit/delete a migration ONLY if it never ran anywhere (no row in `migrations`); once it ran somewhere → write a NEW migration.
+- Real flow (did it once): change the entity (`@Column({ nullable: true }) age`) → `docker compose exec api npm run migration:generate -- src/migrations/AddUserAge` (in the dev container: it has node_modules, env, network; on my PC I'd need `npm ci` + build + `DB_HOST=localhost`) → READ the SQL (`integer`, no NOT NULL) → `up -d --build` (migrate runs from an IMAGE, so it needs a rebuild; the dev api sees the file via the bind mount) → `migrations` has `AddUserAge`, `/users` shows Ana with `age: null`.
+- Entity changed but migration not run yet → `/users` 500 `errorMissingColumn` (synchronize is off, so nothing changes the DB by itself).
+- Team flow: generate ONCE locally → commit entity + migration together → PR review of the SQL → CI/CD runs `migrate` on dev/staging, then prod (backup first). Nobody generates on prod.
+- Claude changed `data-source.ts` to load `migrations/*.js` (glob), so new migrations don't need to be listed by hand; added the `migration:generate` npm script.
+- `sh -c "..."`: `-c` belongs to `sh` = run this STRING as a shell command; only needed for shell features (`|`, `>`, `&&`, `$VAR`) inside the container. `exec api -c ...` without `sh` → R21.
+- Scenario 2 ✔ wrong override file: Claude changed `COMPOSE_FILE` in `.env` to base + PROD → plain `up -d --build` = prod api (`node dist/main`, no mounts) → edit + save, `curl` shows old text. First guesses: "mount removed from the yaml" (no: dev yaml untouched), "overridden in the command" (no). With the hint → label `com.docker.compose.project.config_files` = base + prod → plain `docker compose` reads `COMPOSE_FILE` from `.env` → fixed it back to dev.
+- After the fix the api was still not dev: label = only the base file, `node dist/main` (created before `.env` was saved / with `-f docker-compose.yaml`); `curl` looked right only because the rebuild baked the edit into the image. Plain `up -d` again → label base + dev, `start:dev`, mounts `bind:/app` + `volume:/app/node_modules`, edit reloads. → R33
+- Scenario 3 ✔ bind mount + stale node_modules: "teammate" added `slugify` (package.json + lock + code) → `up -d --build` OK, but `curl` no answer; logs `TS2307: Cannot find module 'slugify'`. First guess "dev deps not installed" (no: dev stage = `FROM build`, full `npm ci`). Found: `run --rm 05-dev-vs-prod-api ls node_modules/slugify` → in the IMAGE ✓, `exec api ls ...` → not in the CONTAINER. Needed the explanation: the anonymous volume `- /app/node_modules` is filled from the image only once (when new/empty); compose REUSES it on every recreate → old node_modules sits over the new image's. Suggested `down -v` (works but deletes pgdata = R19 habit) → found `up -d -V` (`--renew-anon-volumes`) via `up --help`. Fixed: `hello-worldad1d!`, Ana still in the DB. Mixed up `-v` (down: delete ALL volumes) and `-V` (up: renew only anonymous ones). → R38
+- Step 8 done ✔ (3 scenarios).
+- ⏸ Paused 2026-11-06 ~18:00. Next: Step 9 Solo run → Step 10 cleanup + cheat sheet. Open recall Q for next warm-up: why does `docker compose ps` still list a container the current files don't mention (orphan)?
 ### Step 9
 ### Step 10
 
