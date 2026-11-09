@@ -10,8 +10,8 @@ Each project builds on the one before. All use **NestJS + PostgreSQL**, so in th
 | 2  | Dockerize a NestJS app               | Beginner     | `02-dockerize-nestjs/`  | ✅ 2026-10-30 |
 | 3  | NestJS + Postgres with Docker Compose| Beginner     | `03-compose-postgres/`  | ✅ 2026-10-30 |
 | 4  | Production-ready images              | Junior       | `04-prod-images/`       | ✅ 2026-11-03 |
-| 5  | Dev vs. prod environments            | Junior       | `05-dev-vs-prod/`       | ⏳ next       |
-| 6  | Nginx reverse proxy + multiple services | Junior    | `06-nginx-proxy/`       | ⬜            |
+| 5  | Dev vs. prod environments            | Junior       | `05-dev-vs-prod/`       | ✅ 2026-11-09 |
+| 6  | Nginx reverse proxy + multiple services | Junior    | `06-nginx-proxy/`       | ⏳ next       |
 | 7  | CI/CD with GitHub Actions            | → Mid        | `07-ci-cd/`             | ⬜            |
 | 8  | Deploy to a real server              | → Mid        | `08-deploy-vps/`        | ⬜            |
 | 9  | Monitoring and logging               | → Mid        | `09-monitoring/`        | ⬜            |

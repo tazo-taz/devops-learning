@@ -73,11 +73,13 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Loop: symptom → look (`logs`, `ps -a`, `config`, `inspect .Mounts`) → guess → test → fix → explain. No hints for the first few minutes.
 - ✅ Checkpoint: each one fixed and explained in your own words.
 
-## Step 9 — Solo run
-- From empty files: write the `dev` stage and `docker-compose.dev.yml` (bind mount + node_modules volume + start:dev), start dev, edit code, see the reload. Claude only watches. Lookups → `REVIEW.md`.
-- ✅ Checkpoint: works without notes.
+## Step 9 — Explain-it run (replaces the solo run) ✔ DONE
+- Goal: understand + know what exists, not memorize syntax. Looking things up is fine.
+- Walk through `api/Dockerfile` (dev stage) and `docker-compose.dev.yaml`: for each part say WHAT it does, WHY it's there, and WHAT breaks without it.
+- 2–3 "what would you reach for when X?" questions.
+- ✅ Checkpoint: every part explained; only wrong ideas / unknown features → `REVIEW.md`.
 
-## Step 10 — Cleanup + cheat sheet
+## Step 10 — Cleanup + cheat sheet ✔ DONE
 - `docker compose down`, `docker image prune`. `CHEATSHEET.md` as questions; I answer, Claude puts 💡 suggestions in the file.
 - ✅ Checkpoint: "Done when" boxes ticked, Summary written.
 
@@ -169,9 +171,22 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Step 8 done ✔ (3 scenarios).
 - ⏸ Paused 2026-11-06 ~18:00. Next: Step 9 Solo run → Step 10 cleanup + cheat sheet. Open recall Q for next warm-up: why does `docker compose ps` still list a container the current files don't mention (orphan)?
 ### Step 9
+- Changed 2026-11-09: solo run → Explain-it run (goal = understand + know what exists, not memorize syntax).
+- Q1 volumes: `./api:/app` ✓ (bind mount, watch mode sees my edits). `/app/node_modules`: anonymous volume ✓, but it's named by a random ID (only NAMED volumes get the project prefix). Said "don't copy node_modules, move them to the volume": exact picture = the bind mount covers ALL of `/app`; the anon volume is a hole at `/app/node_modules`, filled once from the IMAGE's node_modules. Without it → my PC's node_modules (missing/other OS) → `Cannot find module`.
+- Q2 dev stage: `FROM build` = reuse the full `npm ci` (dev tools like the Nest CLI) ✓. Stages don't MERGE like compose files; `FROM` = start from a copy of that stage. No `COPY . .` needed: said "build already has the code" (true but stale) → real reason: at runtime the bind mount covers `/app` with my live code, so a COPY would be hidden anyway. Dev = code from the mount, prod = code from the image.
+- Q3 "pgAdmin only on demand": guessed `stop pgadmin` / an `enabled: false` (right instinct) → the feature is compose `profiles:` (`--profile tools up`). → R39
+- Step 9 done ✔.
 ### Step 10
+- Cheat sheet: 8/18 right first try (R17, R24 review ✓ → streak 1). Needed answers: dev stage contents, reload debug order, merge rules, which files compose reads, secrets in images, COPY without `--from`. Fixed myself after hints: synchronize, one-shot `service_completed_successfully`, staging vs prod, chown before `USER node`. → R40–R46.
+- Cleanup: no containers left; `docker image prune` for dangling images.
 
 ---
 
 ## Summary
-(written at the end)
+- Dev: `dev` stage = `FROM build` + `start:dev`; compose `./api:/app` bind mount + anonymous `/app/node_modules` volume → save a file, nest reloads in seconds, no rebuild. Prod: final alpine image, no mounts, no pgAdmin, Postgres not published.
+- Compose layering: base `docker-compose.yaml` + `docker-compose.dev.yaml` / `.prod.yaml`; files chosen by `-f` or `COMPOSE_FILE` in `.env`; check with `docker compose config` and the `config_files` label. Lists merge, single values are replaced.
+- Migrations: `synchronize` off; one-shot `migrate` service (`migration:run`) between postgres `service_healthy` and the api (`service_completed_successfully`). Never edit a migration that already ran anywhere → write a new one.
+- Break it: failing NOT NULL migration on existing rows, wrong override via `COMPOSE_FILE`, stale anonymous `node_modules` volume (`up -d -V`, not `down -v`).
+- Method change (2026-11-09): solo run → Explain-it run. Goal = understand + know what exists; looking up syntax is fine.
+- Weak spots (REVIEW.md R33–R46): which compose files are read, mount/volume mechanics, merge rules, one-shot service order, secrets in images, same image across environments, compose profiles.
+- Next topic suggestion: Nginx reverse proxy + multiple services (project 6). Nginx in front on port 80 (api no longer published): `/api` → NestJS, `/` → a frontend, 2 api copies behind one `upstream` (load balancing), Redis for caching. Good place to revisit R42 (merge rules) and R39 (profiles).
