@@ -15,22 +15,22 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ---
 
-## Step 0 — Warm-up (no notes)
+## Step 0 — Warm-up (no notes) ✔ DONE
 - 3 recall questions in chat: 1 from project 5, 2 open `REVIEW.md` items. Update streaks.
 
-## Step 1 — What a reverse proxy is (Nginx alone)
+## Step 1 — What a reverse proxy is (Nginx alone) ✔
 - Concept: a reverse proxy = one front door; the client only talks to Nginx, Nginx forwards to services on the internal network and passes the answer back. vs. a normal (forward) proxy, which sits on the client's side (like the corporate proxy).
 - 🤔 Predict: you run `nginx:alpine` with `-p 8080:80` and open `localhost:8080`. What do you see, and where does that page live inside the container?
 - Commands: `docker run --rm -d -p 8080:80 nginx:alpine`, `curl`, `exec ... cat /etc/nginx/conf.d/default.conf`, `nginx -t`, `docker logs` (access log).
-- ✅ Checkpoint: why do real setups put a proxy in front instead of publishing every service's port?
-- 🔨 Mini break-it:
+- [x] ✅ Checkpoint: why do real setups put a proxy in front instead of publishing every service's port?
+- [x] 🔨 Mini break-it: `index.html` renamed to `home.html` → 403 Forbidden. Found via `docker logs` (`directory index ... is forbidden`) + `ls`; fixed with `mv`.
 
-## Step 2 — Nginx in front of the api (`/api` → NestJS)
+## Step 2 — Nginx in front of the api (`/api` → NestJS) ✔
 - Concept: `nginx` service in compose with my own `nginx.conf` (mounted read-only), `location /api/ { proxy_pass http://api:3000/; }`. Service names = DNS names on the compose network. The api stops publishing 3000 (only Nginx is public).
 - 🤔 Predict: `curl localhost/api/users` → which path does the api actually receive: `/api/users` or `/users`? Why?
 - Commands: `docker compose up -d`, `docker compose exec nginx nginx -t`, `nginx -s reload`, `docker compose logs nginx api`, `curl -i`.
-- ✅ Checkpoint: why can Nginx reach `api:3000` while my PC can't anymore?
-- 🔨 Mini break-it:
+- [x] ✅ Checkpoint: why can Nginx reach `api:3000` while my PC can't anymore?
+- [x] 🔨 Mini break-it: api stopped → 502 Bad Gateway. Found + fixed (started api). 502 = Nginx (the gateway) is fine but got no answer from the service behind it; 500 = the app itself got the request and failed; 404 = path not found.
 
 ## Step 3 — A second service: the frontend (`/` → web)
 - Concept: a tiny static frontend (written by Claude) in its own `web` container; it calls `/api/users` with `fetch`. Same origin through the proxy → no CORS problem.
@@ -83,8 +83,19 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ## Notes / lessons learned
 ### Step 0
+- Q1 (orphans, correct): compose only manages the services in the CURRENT files; a renamed/removed service's old container is left running = orphan. Remove with `up -d --remove-orphans` (compose also warns "Found orphan containers").
+- Q2 (R19, didn't know): `down -v` deleted the `pgdata` volume = the whole DB. A network problem only needs `down` + `up` (or `up -d --force-recreate api`); `-v` only when I WANT the data gone.
+- Q3 (R20 family, didn't know): a container lives exactly as long as PID 1. nginx by default forks into the background and the starter exits → PID 1 gone → container stops at once. `daemon off;` keeps nginx in the foreground as PID 1 (logs to stdout, gets SIGTERM from `docker stop`).
 ### Step 1
+- Predict ✓: default page = `/usr/share/nginx/html/index.html`.
+- Mistake (R21): `docker exec c cd /usr/share/nginx/html ls` → `cd` not found. exec runs a PROGRAM directly, no shell; `cd` is a shell builtin (and `cd` + `ls` aren't chained). Use `exec c ls /path` or `exec c sh -c 'cd /path && ls'`.
+- `location /` + `root` = which folder a path maps to, `index` = file served for a folder; `error_page 500 502 503 504 /50x.html` = friendly error page.
+- Checkpoint (partly): one entry point = no ports in the URL. Also: fewer open ports (api/db/pgAdmin hidden, smaller attack surface), one place for TLS/HTTPS, same origin = no CORS, can spread load over copies.
+- Mistake (R47): didn't know why 403 and not 404 → folder exists, no index file, `autoindex` off → 403. Browser cache hid the break at first → test with `curl -i`. Listed the folder from memory instead of re-running `ls`.
 ### Step 2
+- Predict ✓: trailing `/` in `proxy_pass http://api:3000/;` replaces `/api/` with `/` → api gets `/users`. Proxy ≠ redirect (redirect = 3xx, browser makes a new request; proxy forwards internally).
+- Mistakes (R23): mount typo `default.confg` (nginx only includes `*.conf`); `service_healthy` but dev stage has no healthcheck; `depends_on: api` as a string → must be a list.
+- Result: `curl localhost/api/users` ✓ through Nginx; `localhost:3000` refused (not published). Nginx and api share the compose network → `api:3000` by DNS; `ports:` only for reaching from OUTSIDE Docker. No port in URL = 80.
 ### Step 3
 ### Step 4
 ### Step 5
