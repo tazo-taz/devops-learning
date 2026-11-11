@@ -7,11 +7,20 @@ on:
       - ".github/workflows/ci.yml" # ...or this file itself
 
 jobs:
-  hello:
+  test:
     runs-on: ubuntu-latest # a fresh GitHub-hosted VM for every run
+    defaults:
+      run:
+        working-directory: 07-ci-cd/api # every `run:` step starts in this folder
     steps:
-      - run: uname -a
-      - run: docker --version
-      - run: node --version
-      - run: pwd
-      - run: ls -la
+      - uses: actions/checkout@v4 # download the repo's code into the empty workspace
+
+      - uses: actions/setup-node@v4 # install the Node version we use in the Dockerfile
+        with:
+          node-version: 24
+          cache: npm # keep ~/.npm between runs, keyed by the lock file
+          cache-dependency-path: 07-ci-cd/api/package-lock.json
+
+      - run: npm ci # exact versions from the lock file
+      - run: npm run lint
+      - run: npm test
