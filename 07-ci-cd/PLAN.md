@@ -103,6 +103,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Predict ✓: no checkout → no `package.json` (even earlier: the `working-directory` folder doesn't exist).
 - Job `test`: checkout → setup-node 24 (npm cache) → `npm ci` → lint → test, `defaults.run.working-directory: 07-ci-cd/api`.
 - Checkpoint (partly): "because of the lock file". Full: `npm ci` = exact lock versions + never rewrites the lock, FAILS if lock/package.json disagree or lock missing, deletes node_modules first (clean). `npm install` may update + rewrite the lock.
+- Mini break-it (IN PROGRESS): `cache-dependency-path` line removed → setup-node fails before `npm ci` (looked for the lock file in the repo root). Cause found ✓. Learned: `defaults.run.working-directory` only affects `run:` steps; `uses:` actions ignore it and have their own `with:` inputs. The cache = npm's download folder `~/.npm` (not node_modules), saved/restored by setup-node, key = hash of the lock file; `cache-dependency-path` doesn't `cd`, it only says which file to hash.
+- ⏸ Paused 2026-11-11. TODO when back: add `cache-dependency-path: 07-ci-cd/api/package-lock.json` under `cache: npm` in `.github/workflows/ci.yml` (same indent), Claude pushes, check the run is green → Step 4 (build the image in CI, Predict: does the build fail without the `ca` secret?).
 ### Step 4
 ### Step 5
 ### Step 6
