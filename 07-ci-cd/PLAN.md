@@ -18,15 +18,15 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ---
 
-## Step 0 — Warm-up (no notes)
+## Step 0 — Warm-up (no notes) ✔ DONE
 - 3 recall questions in chat: 1 from project 6, 2 open `REVIEW.md` items. Update streaks.
 
-## Step 1 — Be the pipeline by hand
+## Step 1 — Be the pipeline by hand ✔
 - Concept: CI = a fresh machine runs the SAME commands I'd run (`npm ci`, `lint`, `test`, `docker build`) on every push. A step "fails" when its command exits non-zero (`echo $?`), and the pipeline stops there.
 - 🤔 Predict: you run `npm ci && npm run lint && npm test && docker build ...` and the tests fail. Does the build run? Why does `&&` behave like a pipeline?
 - Run lint, tests, build locally in `07-ci-cd/api`; read the exit codes. Fix whatever fails (find out WHY first: is the code wrong or the test?).
-- [ ] ✅ Checkpoint: all three pass locally. Why: in your words, why is "it passes on my PC" not enough?
-- 🔨 Mini break-it:
+- [x] ✅ Checkpoint: all three pass locally. Why: in your words, why is "it passes on my PC" not enough?
+- 🔨 Mini break-it: `package-lock.json` deleted → `npm ci` fails first (needs the lock). ✔
 
 ## Step 2 — First workflow: hello from GitHub
 - Concept: workflow (`.github/workflows/*.yml`) → triggered by an event (`on: push`) → jobs (each on a fresh VM, `runs-on: ubuntu-latest`) → steps (`run:` a shell command or `uses:` a ready-made action). Actions tab = logs.
@@ -86,8 +86,16 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ## Notes / lessons learned
 ### Step 0
+- Q1 (R50 ✓): `--scale api=3` → reload nginx. Why: nginx resolved `api` at startup (2 IPs) and never asks DNS again → the 3rd copy gets nothing until `nginx -s reload`/restart.
+- Q2 (R55 ✓): without the named `pgdata` volume, `down` + `up` = new container + NEW anonymous volume → users gone. (Already restored in 07's compose.)
+- Q3 (R45 ✓): anyone who can pull the image reads it (`docker history`/`inspect`). Extra: it stays in the image layers in the registry forever (deleting the line later doesn't remove old images), and one image for every env would share one password → secrets come in at RUNTIME (env/CI secrets).
 ### Step 1
+- Predict ✓: `&&` runs the next command only if the previous one exited 0 (like JS short-circuit). `echo $?` = last exit code (0 ok, non-zero fail). CI checks every step's exit code the same way.
+- Chain stopped at `npm test` (exit 1): `getHello()` returned the old slug test text, the test expected `Hello World!`. First edit still didn't match → reverted the code to `'Hello World!'`. Lesson: red test = code and test DISAGREE; decide which one is the truth (bug → fix code, intended change → update test).
+- Checkpoint ✓: my PC has extra things installed/cached (global tools, old node_modules, other OS) that a clean machine doesn't. Also: CI runs EVERY time (people forget), on the COMMITTED code only (not unsaved/uncommitted files), and everyone sees the result.
+- Mini break-it: lock file deleted → `npm ci` stops at once. Found the cause ✓. First fix idea `npm i` (R61): without a lock it installs the NEWEST versions the `^` ranges allow → not what was tested. Restored the committed one with `git restore` → exit 0.
 ### Step 2
+- Mistake (R62): Predict said a workflow in `07-ci-cd/.github/workflows/` runs. No: only the repo-root `.github/workflows/` is read → silently nothing.
 ### Step 3
 ### Step 4
 ### Step 5

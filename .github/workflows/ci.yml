@@ -1,0 +1,17 @@
+name: ci-07 # shown in the Actions tab
+
+on:
+  push:
+    paths:
+      - "07-ci-cd/**" # only run when something in project 07 changes
+      - ".github/workflows/ci.yml" # ...or this file itself
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest # a fresh GitHub-hosted VM for every run
+    steps:
+      - run: uname -a
+      - run: docker --version
+      - run: node --version
+      - run: pwd
+      - run: ls -la
