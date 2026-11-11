@@ -35,11 +35,11 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: green run in the Actions tab. Why: where does this code run, and what's on that machine when the job starts?
 - 🔨 Mini break-it: `node --version` → `nodejs --version` → run red, exit 127. ✔
 
-## Step 3 — Lint + test job
+## Step 3 — Lint + test job ✔
 - Concept: `actions/checkout` (the VM starts EMPTY, no code), `actions/setup-node` (+ npm cache), `defaults.run.working-directory`, `npm ci` vs `npm install`.
 - 🤔 Predict: you skip `actions/checkout` and run `npm ci`. What error do you get?
 - Job `test`: checkout → setup-node 24 → `npm ci` → `npm run lint` → `npm test`.
-- [ ] ✅ Checkpoint: green run, and the log shows the test count. Why: why `npm ci` and not `npm install` in CI?
+- [x] ✅ Checkpoint: green run, and the log shows the test count. Why: why `npm ci` and not `npm install` in CI?
 - 🔨 Mini break-it:
 
 ## Step 4 — Build the image in CI
@@ -100,6 +100,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint ✓ mostly: brand-new machine, none of our files. Correction (R63): it's a fresh VM (GitHub-hosted runner), not a Docker container, and Docker/Node/git are PREINSTALLED in the runner image, not downloaded per run.
 - Mini break-it ✓: red run, step `nodejs --version` → `command not found`, exit 127 (shell's code for "command not found"; 1 = the program ran and reported a failure). The step that fails = the first red step in the log.
 ### Step 3
+- Predict ✓: no checkout → no `package.json` (even earlier: the `working-directory` folder doesn't exist).
+- Job `test`: checkout → setup-node 24 (npm cache) → `npm ci` → lint → test, `defaults.run.working-directory: 07-ci-cd/api`.
+- Checkpoint (partly): "because of the lock file". Full: `npm ci` = exact lock versions + never rewrites the lock, FAILS if lock/package.json disagree or lock missing, deletes node_modules first (clean). `npm install` may update + rewrite the lock.
 ### Step 4
 ### Step 5
 ### Step 6
