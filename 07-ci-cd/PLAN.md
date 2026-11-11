@@ -33,7 +33,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: you put the workflow file in `07-ci-cd/.github/workflows/` and push. What happens in the Actions tab?
 - Write a tiny workflow that prints `uname -a`, `docker --version`, `node --version`, `pwd`, `ls`. Push, watch it run. Add `paths: ['07-ci-cd/**']` so other folders don't trigger it.
 - [x] ✅ Checkpoint: green run in the Actions tab. Why: where does this code run, and what's on that machine when the job starts?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: `node --version` → `nodejs --version` → run red, exit 127. ✔
 
 ## Step 3 — Lint + test job
 - Concept: `actions/checkout` (the VM starts EMPTY, no code), `actions/setup-node` (+ npm cache), `defaults.run.working-directory`, `npm ci` vs `npm install`.
@@ -98,6 +98,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mistake (R62): Predict said a workflow in `07-ci-cd/.github/workflows/` runs. No: only the repo-root `.github/workflows/` is read → silently nothing.
 - Claude wrote `.github/workflows/ci.yml` (user decided: Claude writes new files, I explain them). `pwd` = `/home/runner/work/devops-learning/devops-learning`, `ls -la` = EMPTY: the runner starts without our code → `actions/checkout` needed.
 - Checkpoint ✓ mostly: brand-new machine, none of our files. Correction (R63): it's a fresh VM (GitHub-hosted runner), not a Docker container, and Docker/Node/git are PREINSTALLED in the runner image, not downloaded per run.
+- Mini break-it ✓: red run, step `nodejs --version` → `command not found`, exit 127 (shell's code for "command not found"; 1 = the program ran and reported a failure). The step that fails = the first red step in the log.
 ### Step 3
 ### Step 4
 ### Step 5
