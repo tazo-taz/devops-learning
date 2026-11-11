@@ -10,8 +10,8 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - pgdata:/var/lib/postgresql/data # where Postgres keeps its data inside the container
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data # where Postgres keeps its data inside the container
   api:
     build:
       context: api
@@ -22,12 +22,15 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     environment:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       DB_HOST: postgres
       DB_PORT: 5432
+      REDIS_HOST: redis
   migrate:
     build:
       context: api
@@ -48,12 +51,25 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx:/etc/nginx/conf.d:ro
     depends_on:
       - api
+      - web
+  web:
+    image: nginx:alpine
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+      - ./web-nginx:/etc/nginx/conf.d:ro # its own config (SPA fallback)
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-volumes:
-  pgdata:
+# volumes:
+#   pgdata:
 secrets:
   ca: # same name as in the api secrets list
     file: /usr/local/share/ca-certificates/MIA-ROOT-CA.crt

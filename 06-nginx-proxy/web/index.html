@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Users</title>
+  <style>
+    body { font-family: sans-serif; max-width: 560px; margin: 40px auto; padding: 0 16px; }
+    form { display: flex; gap: 8px; margin-bottom: 16px; }
+    input { flex: 1; padding: 6px; }
+    #error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Users</h1>
+
+  <form id="add">
+    <input name="name" placeholder="name" required>
+    <input name="email" type="email" placeholder="email" required>
+    <button>Add</button>
+  </form>
+
+  <p id="error"></p>
+  <ul id="list"></ul>
+
+  <script>
+    // Relative URL "/api/users" = same origin as this page (localhost:80) → no CORS.
+    // Nginx sends /api/... to the api container.
+    const list = document.getElementById('list');
+    const error = document.getElementById('error');
+
+    async function load() {
+      try {
+        const res = await fetch('/api/users');
+        if (!res.ok) throw new Error(`GET /api/users → ${res.status}`);
+        const users = await res.json();
+        list.innerHTML = '';
+        for (const u of users) {
+          const li = document.createElement('li');
+          li.textContent = `${u.id}: ${u.name} <${u.email}>`;
+          list.appendChild(li);
+        }
+        error.textContent = '';
+      } catch (e) {
+        error.textContent = e.message;
+      }
+    }
+
+    document.getElementById('add').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) { error.textContent = `POST /api/users → ${res.status}`; return; }
+      e.target.reset();
+      load();
+    });
+
+    load();
+  </script>
+</body>
+</html>

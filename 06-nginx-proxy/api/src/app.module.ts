@@ -1,3 +1,4 @@
+import { WhoamiController } from './whoami.controller.js';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -19,7 +20,7 @@ import { UsersModule } from './users/users.module.js';
     }),
     UsersModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [AppController, HealthController, WhoamiController],
   providers: [AppService],
 })
 export class AppModule {}

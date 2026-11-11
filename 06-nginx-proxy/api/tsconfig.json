@@ -19,5 +19,10 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "types": ["vitest/globals", "node"]
+  },
+  // hot reload in Docker: watch the folder, not each file's inode,
+  // so saves that replace the file (new inode) are still noticed
+  "watchOptions": {
+    "watchFile": "useFsEventsOnParentDirectory"
   }
 }
