@@ -73,6 +73,7 @@ Each new cheat sheet re-asks 3–4 open items in a **new form** (different scena
 | R60 | Shared cache vs per-copy memory | Cheat sheet (P06): knew Redis = shared → HIT on copy 2, but not the per-copy case: each copy caching in its OWN RAM → copy 2 misses, and the copies can return DIFFERENT (stale) data; invalidation would have to reach every copy. | P06 | | 0 |
 | R61 | `npm ci` vs `npm i` | Mini break-it (P07): lock file missing → wanted `npm i` to get past `npm ci`. `npm i` without a lock resolves the NEWEST versions the `^` ranges in package.json allow (and writes a new lock) → CI builds different deps than were tested. `npm ci` = exact lock, fails if it's missing/out of sync. Fix = get the real lock back (`git restore package-lock.json`). | P07 | | 0 |
 | R62 | Where GitHub looks for workflows | Predict (P07): thought `07-ci-cd/.github/workflows/hello.yml` would run. GitHub only reads `.github/workflows/` at the REPO ROOT; anywhere else = a normal file, no run, NO error (silent). In a monorepo: root workflow + `paths:` filter + `working-directory:`. | P07 | | 0 |
+| R63 | What a GitHub runner is | Checkpoint (P07): said "docker created a little container and downloaded docker + node". `runs-on: ubuntu-latest` = a fresh VIRTUAL MACHINE per job (thrown away after), with tools PREINSTALLED in the runner image (Docker, Node, git...). Our code is NOT there → `actions/checkout`. (Jobs CAN run inside a container with `container:`, but that's opt-in.) | P07 | | 0 |
 
 ## Mastered
 

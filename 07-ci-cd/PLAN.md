@@ -28,11 +28,11 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: all three pass locally. Why: in your words, why is "it passes on my PC" not enough?
 - 🔨 Mini break-it: `package-lock.json` deleted → `npm ci` fails first (needs the lock). ✔
 
-## Step 2 — First workflow: hello from GitHub
+## Step 2 — First workflow: hello from GitHub ✔
 - Concept: workflow (`.github/workflows/*.yml`) → triggered by an event (`on: push`) → jobs (each on a fresh VM, `runs-on: ubuntu-latest`) → steps (`run:` a shell command or `uses:` a ready-made action). Actions tab = logs.
 - 🤔 Predict: you put the workflow file in `07-ci-cd/.github/workflows/` and push. What happens in the Actions tab?
 - Write a tiny workflow that prints `uname -a`, `docker --version`, `node --version`, `pwd`, `ls`. Push, watch it run. Add `paths: ['07-ci-cd/**']` so other folders don't trigger it.
-- [ ] ✅ Checkpoint: green run in the Actions tab. Why: where does this code run, and what's on that machine when the job starts?
+- [x] ✅ Checkpoint: green run in the Actions tab. Why: where does this code run, and what's on that machine when the job starts?
 - 🔨 Mini break-it:
 
 ## Step 3 — Lint + test job
@@ -96,6 +96,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mini break-it: lock file deleted → `npm ci` stops at once. Found the cause ✓. First fix idea `npm i` (R61): without a lock it installs the NEWEST versions the `^` ranges allow → not what was tested. Restored the committed one with `git restore` → exit 0.
 ### Step 2
 - Mistake (R62): Predict said a workflow in `07-ci-cd/.github/workflows/` runs. No: only the repo-root `.github/workflows/` is read → silently nothing.
+- Claude wrote `.github/workflows/ci.yml` (user decided: Claude writes new files, I explain them). `pwd` = `/home/runner/work/devops-learning/devops-learning`, `ls -la` = EMPTY: the runner starts without our code → `actions/checkout` needed.
+- Checkpoint ✓ mostly: brand-new machine, none of our files. Correction (R63): it's a fresh VM (GitHub-hosted runner), not a Docker container, and Docker/Node/git are PREINSTALLED in the runner image, not downloaded per run.
 ### Step 3
 ### Step 4
 ### Step 5

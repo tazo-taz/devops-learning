@@ -12,6 +12,6 @@ jobs:
     steps:
       - run: uname -a
       - run: docker --version
-      - run: node --version
+      - run: nodejs --version
       - run: pwd
       - run: ls -la
