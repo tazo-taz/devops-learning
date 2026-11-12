@@ -124,6 +124,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint ✓: sha = exact commit (machines, rollback), version = set by hand with a git tag (humans, releases), latest = always newest from main (moves, never for prod).
 - Mini break-it ✔: push to main, test green, build SKIPPED (no error!) → `if:` said `master`, branch is `main`. A false `if:` = skipped, not failed → easy to miss.
 ### Step 7
+- Predict (half, R67): `ca` cert file ✓ (compose secret points at a file on my PC). 2nd guess "volume" ✗ (named volumes are auto-created) → it's `.env` (git-ignored, never checked out).
+- `up` builds a missing image only if the service has `build:`; existing images need `--build` to rebuild. Tested: with `--no-build` compose doesn't need the `ca` file at all.
+- `docker-compose.ci.yaml`: api + migrate use `image: ${API_IMAGE}` (= ghcr image of this sha). Job `smoke` (needs: build): login (packages: read) → `.env` from `secrets.DB_PASSWORD` → `up -d --no-build` → curl `localhost/api/users` with retries → logs on failure → `down -v` always.
 ### Step 8
 ### Step 9
 ### Step 10

@@ -1,0 +1,7 @@
+# CI only: use the image the `build` job pushed to GHCR instead of building on the runner
+# (no build → the `ca` build secret file from my PC is never needed)
+services:
+  api:
+    image: ${API_IMAGE} # e.g. ghcr.io/tazo-taz/devops-api:<commit sha>, set by the workflow
+  migrate:
+    image: ${API_IMAGE} # same image, only the command differs (migration:run)

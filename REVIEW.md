@@ -77,6 +77,7 @@ Each new cheat sheet re-asks 3–4 open items in a **new form** (different scena
 | R64 | What the CI npm cache is | Mini break-it (P07): thought setup-node's `cache: npm` copies old `node_modules` back so nothing gets installed. The cache = npm's DOWNLOAD folder `~/.npm` (package tarballs), keyed by the lock file hash. `npm ci` still deletes node_modules and installs everything fresh; the cache only saves the downloads. Also: a `uses:` path that doesn't exist (bare `package.json` in repo root) = nothing to hash → the step fails. | P07 | | 0 |
 | R65 | Missing build secret | Predict (P07): thought building without the `ca` secret would error. `RUN --mount=type=secret` is OPTIONAL by default: missing secret → file just isn't there, build goes on (`NODE_EXTRA_CA_CERTS` to a missing file = only a warning). Add `required=true` to make a missing secret fail the build. | P07 | | 0 |
 | R66 | Who may push `latest` | Predict (P07): didn't know what goes wrong if a PR/branch build pushes `latest`. Unreviewed code becomes the "official newest" image (anything pulling `latest` deploys it) and branches overwrite each other. Rule: every branch runs tests, only main (+ version tags) pushes images (`if: github.ref == 'refs/heads/main'`). | P07 | | 0 |
+| R67 | What CI is missing from my PC | Predict (P07): found the `ca` cert file, but guessed the named volume as the 2nd. Named volumes are created automatically (empty) by compose. Missing = everything NOT committed: git-ignored `.env` (DB password etc.) → recreate it from CI secrets. | P07 | | 0 |
 
 ## Mastered
 

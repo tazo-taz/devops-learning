@@ -64,3 +64,53 @@ jobs:
           push: true # upload the image to the registry
           tags: ${{ steps.meta.outputs.tags }} # the list metadata-action built
           labels: ${{ steps.meta.outputs.labels }} # adds source repo + commit to the image metadata
+
+  smoke:
+    needs: build # test the image that was just pushed (skipped when build is skipped)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read # pull our private image from ghcr.io
+    defaults:
+      run:
+        working-directory: 07-ci-cd
+    env:
+      API_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api:${{ github.sha }} # exactly this commit's image
+      COMPOSE_FILE: docker-compose.yaml:docker-compose.ci.yaml # base + CI override (no dev/prod files)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create .env from secrets # .env is git-ignored, so the runner doesn't have it
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # repo secret → masked as *** in the log
+        run: |
+          {
+            echo "DB_USER=app"
+            echo "DB_NAME=app"
+            echo "DB_PASSWORD=$DB_PASSWORD"
+          } > .env
+
+      - name: Start the stack
+        run: docker compose up -d --no-build # --no-build: pull our image, don't build it here
+
+      - name: Smoke test through nginx
+        run: |
+          for i in $(seq 1 30); do # api waits for postgres + migrate, so retry for up to ~60s
+            if curl -fsS http://localhost/api/users; then echo; echo "smoke test OK"; exit 0; fi
+            sleep 2
+          done
+          echo "api never answered through nginx"; exit 1
+
+      - name: Show logs if something failed
+        if: failure()
+        run: docker compose ps -a && docker compose logs --tail=50
+
+      - name: Stop the stack
+        if: always() # clean up even after a failure
+        run: docker compose down -v
