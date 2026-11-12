@@ -4,7 +4,7 @@
 **You learn:** pipelines, image registries, secrets in CI, and versioning.
 **Done when:**
 - [ ] a `git push` that touches `07-ci-cd/` automatically runs lint + tests and produces a new image `ghcr.io/tazo-taz/...:<commit sha>` in the registry
-- [ ] a failing test stops the pipeline BEFORE any image is pushed
+- [x] a failing test stops the pipeline BEFORE any image is pushed
 - [ ] (extra) CI starts the whole compose stack with the new image and `curl`s through nginx (smoke test), using CI secrets instead of a committed `.env`
 
 > From project 6: nginx on port 80 in front of `web` + 2 api copies (`upstream` + `zone`), Redis cache, dev/prod compose overrides, one-shot `migrate`.
@@ -132,6 +132,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mini break-it ✔: smoke red "api never answered" → nginx `server api:3001`, api listens on 3000 → connection refused → 502 → `curl -f` fails every retry. Unit tests + image build were green: only the smoke test catches wiring between services.
 - New rule (2026-11-12): after a break, Claude prints a spacer so the command scrolls off screen.
 ### Step 8
+- Break 1 ✔ (failing test): `getHello()` returned `'Hello World'` → test red, build + smoke SKIPPED, no new image. Fixed the code (`!`). Why ✓: `needs: test` → build never starts; smoke `needs: build`. Good news = broken code never reached the registry.
 ### Step 9
 ### Step 10
 
