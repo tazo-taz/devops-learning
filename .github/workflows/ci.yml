@@ -28,12 +28,26 @@ jobs:
   build:
     needs: test # only starts if the test job passed
     runs-on: ubuntu-latest # a NEW fresh VM: nothing from the test job is here
+    permissions:
+      contents: read # checkout the code
+      packages: write # allow GITHUB_TOKEN to push images to ghcr.io
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api # full image name, without a tag
     steps:
       - uses: actions/checkout@v4 # this VM is empty too, so check out again
 
       - uses: docker/setup-buildx-action@v3 # BuildKit builder (needed for --mount=type=secret, cache, push)
 
+      - uses: docker/login-action@v3 # `docker login ghcr.io` with the token GitHub creates for every run
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: docker/build-push-action@v6
         with:
           context: 07-ci-cd/api # uses: ignores working-directory → full path from the repo root
-          push: false # build only for now (Step 5 pushes to GHCR)
+          push: true # upload the image to the registry
+          tags: | # one image, two names
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
