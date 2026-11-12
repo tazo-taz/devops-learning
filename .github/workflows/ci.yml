@@ -18,7 +18,8 @@ jobs:
       - uses: actions/setup-node@v4 # install the Node version we use in the Dockerfile
         with:
           node-version: 24
-          # cache: npm # keep ~/.npm between runs, keyed by the lock file
+          cache: npm # keep ~/.npm between runs, keyed by the lock file
+          cache-dependency-path: 07-ci-cd/api/package-lock.json # uses: ignores working-directory, so give the full path
 
       - run: npm ci # exact versions from the lock file
       - run: npm run lint
