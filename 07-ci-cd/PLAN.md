@@ -106,6 +106,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mini break-it ✔: `cache-dependency-path` line removed → setup-node fails before `npm ci` (looked for the lock file in the repo root). Cause found ✓. Learned: `defaults.run.working-directory` only affects `run:` steps; `uses:` actions ignore it and have their own `with:` inputs. The cache = npm's download folder `~/.npm` (not node_modules), saved/restored by setup-node, key = hash of the lock file; `cache-dependency-path` doesn't `cd`, it only says which file to hash.
 - Mistake (R64): after the break, thought the cache copies old `node_modules` (no install). It is `~/.npm` downloads; `npm ci` always installs fresh, the cache just skips downloading. A bare `cache-dependency-path: package.json` → file not in repo root → step fails.
 - Experiment: commented out `cache: npm` → green without the path (setup-node only installs Node). Fixed with `cache-dependency-path: 07-ci-cd/api/package-lock.json` (2026-11-12).
+- Timing: `npm ci` without cache (1ea81d8) vs with cache (this run): _fill in_.
 ### Step 4
 ### Step 5
 ### Step 6
