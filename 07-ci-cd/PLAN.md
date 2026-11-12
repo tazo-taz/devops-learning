@@ -133,6 +133,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - New rule (2026-11-12): after a break, Claude prints a spacer so the command scrolls off screen.
 ### Step 8
 - Break 1 ✔ (failing test): `getHello()` returned `'Hello World'` → test red, build + smoke SKIPPED, no new image. Fixed the code (`!`). Why ✓: `needs: test` → build never starts; smoke `needs: build`. Good news = broken code never reached the registry.
+- Break 2 ✔ (registry permission): build job `packages: read` → login OK, push denied at the end. Fixed → `packages: write`. Why ✓: login = WHO you are (authentication), `permissions:` = WHAT the token may do (authorization).
 ### Step 9
 ### Step 10
 

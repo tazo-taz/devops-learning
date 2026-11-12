@@ -66,7 +66,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }} # adds source repo + commit to the image metadata
 
   smoke:
-    needs: build # test the image that was just pushed (skipped when build is skipped)
+     needs: build # test the image that was just pushed (skipped when build is skipped)
     runs-on: ubuntu-latest
     permissions:
       contents: read
