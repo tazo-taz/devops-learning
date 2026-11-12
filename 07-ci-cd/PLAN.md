@@ -54,7 +54,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: why tag with the commit sha at all, when `latest` already points at the newest image?
 - Push the image, find it under the repo's Packages, `docker pull` it on my PC and run it.
 - [x] ✅ Checkpoint: the image in GHCR has the same sha as `git log -1`. Why: which image would you deploy to roll back to yesterday, and how do you find it?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: image name `devops-API` → build red at push (repository name must be lowercase). ✔
 
 ## Step 6 — When to push: branches, PRs, versions
 - Concept: `on: push` vs `pull_request`; `if: github.ref == 'refs/heads/main'` (PRs only test, main also pushes); git tag `v1.0.0` → image tag `1.0.0` (`docker/metadata-action`). Semver = MAJOR.MINOR.PATCH.
@@ -116,6 +116,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Predict ✓: sha tag = roll back to a known version fast. Plus: `latest` MOVES (overwritten every push), a sha never changes and points at the exact commit inside the image.
 - Job `build` now: `permissions: packages: write`, `docker/login-action` with `GITHUB_TOKEN`, push tags `ghcr.io/tazo-taz/devops-api:<sha>` + `:latest`. Pulled it locally (package is private → `docker login ghcr.io` with a PAT `read:packages`).
 - Checkpoint (partly → ✓): first "the commit before the current one". Not every commit has an image (`paths:` filter) and several may be pushed per day → pick the image that was RUNNING yesterday (tag list dates under Packages / deploy history), deploy it by sha, never `latest`.
+- Mini break-it ✔: `IMAGE` had uppercase `devops-API` → build-push fails, no new package. Found it: image/repository names must be lowercase.
 ### Step 6
 ### Step 7
 ### Step 8

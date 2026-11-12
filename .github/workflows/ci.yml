@@ -32,7 +32,7 @@ jobs:
       contents: read # checkout the code
       packages: write # allow GITHUB_TOKEN to push images to ghcr.io
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/devops-API # full image name, without a tag
+      IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api # full image name, without a tag
     steps:
       - uses: actions/checkout@v4 # this VM is empty too, so check out again
 
