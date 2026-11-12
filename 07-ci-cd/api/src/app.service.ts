@@ -5,6 +5,6 @@ import slugify from 'slugify';
 export class AppService {
   getHello(): string {
     // teammate's change: return the greeting as a URL-friendly slug
-    return 'Hello World!';
+    return 'Hello World';
   }
 }
