@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest # a NEW fresh VM: nothing from the test job is here
     permissions:
       contents: read # checkout the code
-      packages: read # allow GITHUB_TOKEN to push images to ghcr.io
+      packages: write # allow GITHUB_TOKEN to push images to ghcr.io
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api # full image name, without a tag
     steps:
