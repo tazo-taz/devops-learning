@@ -47,7 +47,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: the Dockerfile mounts the `ca` secret, but CI doesn't pass one. Does the build fail? (Hint: are secret mounts required by default?)
 - Job `build` with `needs: test` (only runs if tests passed).
 - [x] ✅ Checkpoint: green build job after the test job. Why: what does `needs:` give you, and what would happen without it?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: `COPY . .` removed from the Dockerfile → test green, build red (`tsconfig.json` not found). ✔
 
 ## Step 5 — Push to GHCR, tagged with the commit hash
 - Concept: registry = a "GitHub for images" (`docker push` / `docker pull`). Full name `ghcr.io/<owner>/<image>:<tag>`. Login with `docker/login-action` + `GITHUB_TOKEN`; the job needs `permissions: packages: write`. Tags: `${{ github.sha }}` (exact, never changes) + `latest` (moves).
@@ -111,6 +111,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mistake (R65): Predict said the build fails without the `ca` secret. Secret mounts are optional by default → no file, build continues (Node only warns about the missing extra CA). `required=true` makes it mandatory. Correct part: the proxy problem is only on my PC, the runner needs no CA.
 - Job `build`: `needs: test`, own fresh VM → checkout again, `setup-buildx-action`, `build-push-action` with `context: 07-ci-cd/api` (full path, `uses:` ignores working-directory), `push: false`. Green.
 - Checkpoint (partly): "waits for test" ✓. Missing: build only runs if test PASSED (red test → build skipped); without `needs` jobs run in PARALLEL → image built (later pushed) even with failing tests. (Test job doesn't build anything, only lint + test.)
+- Mini break-it ✔: test green, build red at `[build 5/5] RUN npm run build`: `Could not find tsconfig.json`. Checked ci.yml first (fine), then read the log → which Dockerfile line, then went through the lines above it → `COPY . .` missing (only package*.json copied). Put it back after `npm ci` (keeps the deps layer cached). Lesson: the test job runs on the checked-out repo, the build runs on what the Dockerfile COPIES → green tests don't prove the image builds.
 ### Step 5
 ### Step 6
 ### Step 7
