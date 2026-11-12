@@ -62,11 +62,11 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: a push to a branch → tests only; push to main → image; tag `v1.0.0` → image `1.0.0`. Why: sha vs semver vs latest, who is each one for?
 - 🔨 Mini break-it: `if:` checked `refs/heads/master` → build skipped on main. ✔
 
-## Step 7 — Smoke test the stack in CI + secrets
+## Step 7 — Smoke test the stack in CI + secrets ✔
 - Concept: unit tests check functions; a smoke test starts the real stack (compose: nginx + api + postgres + redis) and `curl`s it. `.env` is git-ignored, so CI has no DB password → GitHub repo **secrets** (`${{ secrets.X }}`), masked as `***` in logs. Compose's `ca` secret file only exists on MY PC.
 - 🤔 Predict: CI runs `docker compose up` with our compose file. Which TWO things from my PC are missing on the runner?
 - Job `smoke`: create `.env` from secrets, start the stack with the built image, wait for health, `curl localhost/api/users`, `down`.
-- [ ] ✅ Checkpoint: green smoke job; the password never appears in the log. Why: why not commit `.env`, and why not `echo` a secret to "debug" it?
+- [x] ✅ Checkpoint: green smoke job; the password never appears in the log. Why: why not commit `.env`, and why not `echo` a secret to "debug" it?
 - 🔨 Mini break-it:
 
 ## Step 8 — Break it
@@ -127,6 +127,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Predict (half, R67): `ca` cert file ✓ (compose secret points at a file on my PC). 2nd guess "volume" ✗ (named volumes are auto-created) → it's `.env` (git-ignored, never checked out).
 - `up` builds a missing image only if the service has `build:`; existing images need `--build` to rebuild. Tested: with `--no-build` compose doesn't need the `ca` file at all.
 - `docker-compose.ci.yaml`: api + migrate use `image: ${API_IMAGE}` (= ghcr image of this sha). Job `smoke` (needs: build): login (packages: read) → `.env` from `secrets.DB_PASSWORD` → `up -d --no-build` → curl `localhost/api/users` with retries → logs on failure → `down -v` always.
+- First run sat at "Waiting for a runner" ~5 min: GitHub-side queue, not our workflow. Then green: test → build → smoke.
+- Checkpoint (partly, R68): "secrets aren't visible". Missing: committed `.env` = in git history forever; masking only hides the exact string (base64/partial leaks) and any workflow step can read a secret.
 ### Step 8
 ### Step 9
 ### Step 10

@@ -78,6 +78,7 @@ Each new cheat sheet re-asks 3–4 open items in a **new form** (different scena
 | R65 | Missing build secret | Predict (P07): thought building without the `ca` secret would error. `RUN --mount=type=secret` is OPTIONAL by default: missing secret → file just isn't there, build goes on (`NODE_EXTRA_CA_CERTS` to a missing file = only a warning). Add `required=true` to make a missing secret fail the build. | P07 | | 0 |
 | R66 | Who may push `latest` | Predict (P07): didn't know what goes wrong if a PR/branch build pushes `latest`. Unreviewed code becomes the "official newest" image (anything pulling `latest` deploys it) and branches overwrite each other. Rule: every branch runs tests, only main (+ version tags) pushes images (`if: github.ref == 'refs/heads/main'`). | P07 | | 0 |
 | R67 | What CI is missing from my PC | Predict (P07): found the `ca` cert file, but guessed the named volume as the 2nd. Named volumes are created automatically (empty) by compose. Missing = everything NOT committed: git-ignored `.env` (DB password etc.) → recreate it from CI secrets. | P07 | | 0 |
+| R68 | How safe CI secrets are | Checkpoint (P07): "GitHub secrets are never readable". Any workflow step CAN read them (it has to, to use them); masking only hides the EXACT string → base64/partial/encoded values leak into logs; whoever can push workflow code can leak them. And a committed `.env` stays in git history forever (deleting later doesn't help). | P07 | | 0 |
 
 ## Mastered
 
