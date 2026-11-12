@@ -60,7 +60,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: `on: push` vs `pull_request`; `if: github.ref == 'refs/heads/main'` (PRs only test, main also pushes); git tag `v1.0.0` → image tag `1.0.0` (`docker/metadata-action`). Semver = MAJOR.MINOR.PATCH.
 - 🤔 Predict: a PR from a branch builds and PUSHES `latest`. What could go wrong?
 - [x] ✅ Checkpoint: a push to a branch → tests only; push to main → image; tag `v1.0.0` → image `1.0.0`. Why: sha vs semver vs latest, who is each one for?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: `if:` checked `refs/heads/master` → build skipped on main. ✔
 
 ## Step 7 — Smoke test the stack in CI + secrets
 - Concept: unit tests check functions; a smoke test starts the real stack (compose: nginx + api + postgres + redis) and `curl`s it. `.env` is git-ignored, so CI has no DB password → GitHub repo **secrets** (`${{ secrets.X }}`), masked as `***` in logs. Compose's `ca` secret file only exists on MY PC.
@@ -122,6 +122,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Workflow: `push` on all branches + tags `v*`; `build` has `if:` main or `refs/tags/v*`; `docker/metadata-action` makes the tags (full sha always, `latest` only on main, `1.0.0` from git tag `v1.0.0`).
 - Tested: `test-branch` push → build skipped; tag `v1.0.0` on b82f937 → image `1.0.0` in GHCR.
 - Checkpoint ✓: sha = exact commit (machines, rollback), version = set by hand with a git tag (humans, releases), latest = always newest from main (moves, never for prod).
+- Mini break-it ✔: push to main, test green, build SKIPPED (no error!) → `if:` said `master`, branch is `main`. A false `if:` = skipped, not failed → easy to miss.
 ### Step 7
 ### Step 8
 ### Step 9

@@ -30,7 +30,7 @@ jobs:
   build:
     needs: test # only starts if the test job passed
     # only main (reviewed code) and version tags make images; other branches stop after `test`
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest # a NEW fresh VM: nothing from the test job is here
     permissions:
       contents: read # checkout the code
