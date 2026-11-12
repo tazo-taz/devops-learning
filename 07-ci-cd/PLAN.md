@@ -118,6 +118,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint (partly → ✓): first "the commit before the current one". Not every commit has an image (`paths:` filter) and several may be pushed per day → pick the image that was RUNNING yesterday (tag list dates under Packages / deploy history), deploy it by sha, never `latest`.
 - Mini break-it ✔: `IMAGE` had uppercase `devops-API` → build-push fails, no new package. Found it: image/repository names must be lowercase.
 ### Step 6
+- Mistake (R66): Predict "idk" (branch pushes `latest`). Unreviewed code becomes `latest`, branches overwrite each other → only main + tags push.
+- Workflow: `push` on all branches + tags `v*`; `build` has `if:` main or `refs/tags/v*`; `docker/metadata-action` makes the tags (full sha always, `latest` only on main, `1.0.0` from git tag `v1.0.0`).
 ### Step 7
 ### Step 8
 ### Step 9

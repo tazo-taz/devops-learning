@@ -2,6 +2,8 @@ name: ci-07 # shown in the Actions tab
 
 on:
   push:
+    branches: ["**"] # every branch runs the tests
+    tags: ["v*"] # a git tag like v1.0.0 also starts a run (paths: is NOT checked for tags)
     paths:
       - "07-ci-cd/**" # only run when something in project 07 changes
       - ".github/workflows/ci.yml" # ...or this file itself
@@ -27,6 +29,8 @@ jobs:
 
   build:
     needs: test # only starts if the test job passed
+    # only main (reviewed code) and version tags make images; other branches stop after `test`
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest # a NEW fresh VM: nothing from the test job is here
     permissions:
       contents: read # checkout the code
@@ -44,10 +48,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: docker/metadata-action@v5 # works out the tag list from the event (branch / git tag)
+        id: meta # so later steps can read its output: steps.meta.outputs.tags
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,format=long,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+          # sha → always (full commit hash) | latest → only on main | semver → git tag v1.0.0 → image 1.0.0
+
       - uses: docker/build-push-action@v6
         with:
           context: 07-ci-cd/api # uses: ignores working-directory → full path from the repo root
           push: true # upload the image to the registry
-          tags: | # one image, two names
-            ${{ env.IMAGE }}:${{ github.sha }}
-            ${{ env.IMAGE }}:latest
+          tags: ${{ steps.meta.outputs.tags }} # the list metadata-action built
+          labels: ${{ steps.meta.outputs.labels }} # adds source repo + commit to the image metadata
