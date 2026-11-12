@@ -49,11 +49,11 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: green build job after the test job. Why: what does `needs:` give you, and what would happen without it?
 - 🔨 Mini break-it: `COPY . .` removed from the Dockerfile → test green, build red (`tsconfig.json` not found). ✔
 
-## Step 5 — Push to GHCR, tagged with the commit hash
+## Step 5 — Push to GHCR, tagged with the commit hash ✔
 - Concept: registry = a "GitHub for images" (`docker push` / `docker pull`). Full name `ghcr.io/<owner>/<image>:<tag>`. Login with `docker/login-action` + `GITHUB_TOKEN`; the job needs `permissions: packages: write`. Tags: `${{ github.sha }}` (exact, never changes) + `latest` (moves).
 - 🤔 Predict: why tag with the commit sha at all, when `latest` already points at the newest image?
 - Push the image, find it under the repo's Packages, `docker pull` it on my PC and run it.
-- [ ] ✅ Checkpoint: the image in GHCR has the same sha as `git log -1`. Why: which image would you deploy to roll back to yesterday, and how do you find it?
+- [x] ✅ Checkpoint: the image in GHCR has the same sha as `git log -1`. Why: which image would you deploy to roll back to yesterday, and how do you find it?
 - 🔨 Mini break-it:
 
 ## Step 6 — When to push: branches, PRs, versions
@@ -113,6 +113,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint (partly): "waits for test" ✓. Missing: build only runs if test PASSED (red test → build skipped); without `needs` jobs run in PARALLEL → image built (later pushed) even with failing tests. (Test job doesn't build anything, only lint + test.)
 - Mini break-it ✔: test green, build red at `[build 5/5] RUN npm run build`: `Could not find tsconfig.json`. Checked ci.yml first (fine), then read the log → which Dockerfile line, then went through the lines above it → `COPY . .` missing (only package*.json copied). Put it back after `npm ci` (keeps the deps layer cached). Lesson: the test job runs on the checked-out repo, the build runs on what the Dockerfile COPIES → green tests don't prove the image builds.
 ### Step 5
+- Predict ✓: sha tag = roll back to a known version fast. Plus: `latest` MOVES (overwritten every push), a sha never changes and points at the exact commit inside the image.
+- Job `build` now: `permissions: packages: write`, `docker/login-action` with `GITHUB_TOKEN`, push tags `ghcr.io/tazo-taz/devops-api:<sha>` + `:latest`. Pulled it locally (package is private → `docker login ghcr.io` with a PAT `read:packages`).
+- Checkpoint (partly → ✓): first "the commit before the current one". Not every commit has an image (`paths:` filter) and several may be pushed per day → pick the image that was RUNNING yesterday (tag list dates under Packages / deploy history), deploy it by sha, never `latest`.
 ### Step 6
 ### Step 7
 ### Step 8
