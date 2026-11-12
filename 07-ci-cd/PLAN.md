@@ -47,27 +47,27 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: the Dockerfile mounts the `ca` secret, but CI doesn't pass one. Does the build fail? (Hint: are secret mounts required by default?)
 - Job `build` with `needs: test` (only runs if tests passed).
 - [ ] ✅ Checkpoint: green build job after the test job. Why: what does `needs:` give you, and what would happen without it?
-- 🔨 Mini break-it: `cache-dependency-path` removed → setup-node fails (no lock file in repo root). ✔
+- 🔨 Mini break-it:
 
 ## Step 5 — Push to GHCR, tagged with the commit hash
 - Concept: registry = a "GitHub for images" (`docker push` / `docker pull`). Full name `ghcr.io/<owner>/<image>:<tag>`. Login with `docker/login-action` + `GITHUB_TOKEN`; the job needs `permissions: packages: write`. Tags: `${{ github.sha }}` (exact, never changes) + `latest` (moves).
 - 🤔 Predict: why tag with the commit sha at all, when `latest` already points at the newest image?
 - Push the image, find it under the repo's Packages, `docker pull` it on my PC and run it.
 - [ ] ✅ Checkpoint: the image in GHCR has the same sha as `git log -1`. Why: which image would you deploy to roll back to yesterday, and how do you find it?
-- 🔨 Mini break-it: `cache-dependency-path` removed → setup-node fails (no lock file in repo root). ✔
+- 🔨 Mini break-it:
 
 ## Step 6 — When to push: branches, PRs, versions
 - Concept: `on: push` vs `pull_request`; `if: github.ref == 'refs/heads/main'` (PRs only test, main also pushes); git tag `v1.0.0` → image tag `1.0.0` (`docker/metadata-action`). Semver = MAJOR.MINOR.PATCH.
 - 🤔 Predict: a PR from a branch builds and PUSHES `latest`. What could go wrong?
 - [ ] ✅ Checkpoint: a push to a branch → tests only; push to main → image; tag `v1.0.0` → image `1.0.0`. Why: sha vs semver vs latest, who is each one for?
-- 🔨 Mini break-it: `cache-dependency-path` removed → setup-node fails (no lock file in repo root). ✔
+- 🔨 Mini break-it:
 
 ## Step 7 — Smoke test the stack in CI + secrets
 - Concept: unit tests check functions; a smoke test starts the real stack (compose: nginx + api + postgres + redis) and `curl`s it. `.env` is git-ignored, so CI has no DB password → GitHub repo **secrets** (`${{ secrets.X }}`), masked as `***` in logs. Compose's `ca` secret file only exists on MY PC.
 - 🤔 Predict: CI runs `docker compose up` with our compose file. Which TWO things from my PC are missing on the runner?
 - Job `smoke`: create `.env` from secrets, start the stack with the built image, wait for health, `curl localhost/api/users`, `down`.
 - [ ] ✅ Checkpoint: green smoke job; the password never appears in the log. Why: why not commit `.env`, and why not `echo` a secret to "debug" it?
-- 🔨 Mini break-it: `cache-dependency-path` removed → setup-node fails (no lock file in repo root). ✔
+- 🔨 Mini break-it:
 
 ## Step 8 — Break it
 - Claude breaks things one at a time, gives only the symptom (from ROADMAP): a failing test blocks the pipeline, a missing/wrong registry permission or secret, a YAML indentation error.
