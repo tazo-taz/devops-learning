@@ -74,9 +74,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Loop: symptom → look (Actions log, which step, exit code) → guess → test → fix → explain.
 - [x] ✅ Checkpoint: all three found and explained.
 
-## Step 9 — Explain-it run
+## Step 9 — Explain-it run ✔
 - Walk through the workflow file top to bottom: for each part say WHAT it does, WHY it's there, WHAT breaks without it. Plus 2–3 "what would you reach for when X?" questions. Lookups are fine.
-- [ ] ✅ Checkpoint: every part explained; only wrong ideas / unknown features → `REVIEW.md`.
+- [x] ✅ Checkpoint: every part explained; only wrong ideas / unknown features → `REVIEW.md`.
 
 ## Step 10 — Cleanup + cheat sheet
 - Delete test images/tags you don't need (GHCR + local), `docker image prune`. `CHEATSHEET.md` as questions; I answer, Claude puts 💡 suggestions in the file.
@@ -136,7 +136,14 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Break 2 ✔ (registry permission): build job `packages: read` → login OK, push denied at the end. Fixed → `packages: write`. Why ✓: login = WHO you are (authentication), `permissions:` = WHAT the token may do (authorization).
 - Break 3 ✔ (YAML indent): smoke's `needs:` had 5 spaces → run red instantly, NO jobs ("Invalid workflow file"). GitHub pointed at line 11 (`jobs:`, the parent block), real error was inside a job → compared the indentation of each job's keys and fixed it.
 ### Step 9
+- `on:` ✓ (what). Added: no `paths` → every folder's push runs CI; ci.yml in paths → workflow changes test themselves; no `tags` → v1.0.0 makes nothing (paths not checked for tags).
+- `test` job ✓ mostly. Forgot `checkout` (code) + `working-directory`. Mistake (R69): lint = ESLint (style + likely bugs), not TS type errors (that's `tsc` / `nest build`).
+- `build` job: flow ✓ (if → permissions → checkout → buildx → login → metadata → push). `contents: read` = checkout ✓, `IMAGE` = just the name ✓. Mistake (R70): without `needs: test` → thought tests just don't run; really both jobs run in PARALLEL → broken image pushed.
+- From now on (user asked): in the Explain-it run Claude ASKS about skipped parts instead of writing the answer.
+- `smoke` job: needs/permissions/working-dir/sha/.env/up ✓, ci override + `--no-build` ✓. R71: why pull instead of rebuilding → build once, test + deploy THE SAME image (private package → login). R72: no `always()` → cleanup SKIPPED after a failure (default `if: success()`), not "non-stop".
+- "Reach for" questions skipped (R73): `services:`, `strategy: matrix`, environments + required reviewers.
 ### Step 10
+- ⏸ Paused 2026-11-12. TODO when back: cleanup (old sha versions in GHCR, local `docker rmi` + `image prune`, delete `test-branch`), then Claude creates CHEATSHEET.md → answers → Summary + "Done when" + ROADMAP row.
 
 ---
 
