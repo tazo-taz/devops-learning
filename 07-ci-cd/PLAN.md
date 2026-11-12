@@ -67,7 +67,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: CI runs `docker compose up` with our compose file. Which TWO things from my PC are missing on the runner?
 - Job `smoke`: create `.env` from secrets, start the stack with the built image, wait for health, `curl localhost/api/users`, `down`.
 - [x] ✅ Checkpoint: green smoke job; the password never appears in the log. Why: why not commit `.env`, and why not `echo` a secret to "debug" it?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: nginx upstream `api:3001` (api listens on 3000) → smoke red, 502. ✔
 
 ## Step 8 — Break it
 - Claude breaks things one at a time, gives only the symptom (from ROADMAP): a failing test blocks the pipeline, a missing/wrong registry permission or secret, a YAML indentation error.
@@ -129,6 +129,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - `docker-compose.ci.yaml`: api + migrate use `image: ${API_IMAGE}` (= ghcr image of this sha). Job `smoke` (needs: build): login (packages: read) → `.env` from `secrets.DB_PASSWORD` → `up -d --no-build` → curl `localhost/api/users` with retries → logs on failure → `down -v` always.
 - First run sat at "Waiting for a runner" ~5 min: GitHub-side queue, not our workflow. Then green: test → build → smoke.
 - Checkpoint (partly, R68): "secrets aren't visible". Missing: committed `.env` = in git history forever; masking only hides the exact string (base64/partial leaks) and any workflow step can read a secret.
+- Mini break-it ✔: smoke red "api never answered" → nginx `server api:3001`, api listens on 3000 → connection refused → 502 → `curl -f` fails every retry. Unit tests + image build were green: only the smoke test catches wiring between services.
+- New rule (2026-11-12): after a break, Claude prints a spacer so the command scrolls off screen.
 ### Step 8
 ### Step 9
 ### Step 10
