@@ -108,6 +108,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Experiment: commented out `cache: npm` → green without the path (setup-node only installs Node). Fixed with `cache-dependency-path: 07-ci-cd/api/package-lock.json` (2026-11-12).
 - Timing: `npm ci` without cache (1ea81d8) vs with cache (this run): _fill in_.
 ### Step 4
+- Mistake (R65): Predict said the build fails without the `ca` secret. Secret mounts are optional by default → no file, build continues (Node only warns about the missing extra CA). `required=true` makes it mandatory. Correct part: the proxy problem is only on my PC, the runner needs no CA.
 ### Step 5
 ### Step 6
 ### Step 7

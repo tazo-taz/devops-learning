@@ -24,3 +24,16 @@ jobs:
       - run: npm ci # exact versions from the lock file
       - run: npm run lint
       - run: npm test
+
+  build:
+    needs: test # only starts if the test job passed
+    runs-on: ubuntu-latest # a NEW fresh VM: nothing from the test job is here
+    steps:
+      - uses: actions/checkout@v4 # this VM is empty too, so check out again
+
+      - uses: docker/setup-buildx-action@v3 # BuildKit builder (needed for --mount=type=secret, cache, push)
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: 07-ci-cd/api # uses: ignores working-directory → full path from the repo root
+          push: false # build only for now (Step 5 pushes to GHCR)
