@@ -69,10 +69,10 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: green smoke job; the password never appears in the log. Why: why not commit `.env`, and why not `echo` a secret to "debug" it?
 - 🔨 Mini break-it: nginx upstream `api:3001` (api listens on 3000) → smoke red, 502. ✔
 
-## Step 8 — Break it
+## Step 8 — Break it ✔
 - Claude breaks things one at a time, gives only the symptom (from ROADMAP): a failing test blocks the pipeline, a missing/wrong registry permission or secret, a YAML indentation error.
 - Loop: symptom → look (Actions log, which step, exit code) → guess → test → fix → explain.
-- [ ] ✅ Checkpoint: all three found and explained.
+- [x] ✅ Checkpoint: all three found and explained.
 
 ## Step 9 — Explain-it run
 - Walk through the workflow file top to bottom: for each part say WHAT it does, WHY it's there, WHAT breaks without it. Plus 2–3 "what would you reach for when X?" questions. Lookups are fine.
@@ -134,6 +134,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 8
 - Break 1 ✔ (failing test): `getHello()` returned `'Hello World'` → test red, build + smoke SKIPPED, no new image. Fixed the code (`!`). Why ✓: `needs: test` → build never starts; smoke `needs: build`. Good news = broken code never reached the registry.
 - Break 2 ✔ (registry permission): build job `packages: read` → login OK, push denied at the end. Fixed → `packages: write`. Why ✓: login = WHO you are (authentication), `permissions:` = WHAT the token may do (authorization).
+- Break 3 ✔ (YAML indent): smoke's `needs:` had 5 spaces → run red instantly, NO jobs ("Invalid workflow file"). GitHub pointed at line 11 (`jobs:`, the parent block), real error was inside a job → compared the indentation of each job's keys and fixed it.
 ### Step 9
 ### Step 10
 
