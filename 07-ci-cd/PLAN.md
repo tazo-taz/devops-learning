@@ -42,11 +42,11 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: green run, and the log shows the test count. Why: why `npm ci` and not `npm install` in CI?
 - 🔨 Mini break-it: `cache-dependency-path` removed → setup-node fails (no lock file in repo root). ✔
 
-## Step 4 — Build the image in CI
+## Step 4 — Build the image in CI ✔
 - Concept: `docker/setup-buildx-action` + `docker/build-push-action` (build only, `push: false`). The Dockerfile's `--mount=type=secret,id=ca`: the CI runner is NOT behind the corporate proxy.
 - 🤔 Predict: the Dockerfile mounts the `ca` secret, but CI doesn't pass one. Does the build fail? (Hint: are secret mounts required by default?)
 - Job `build` with `needs: test` (only runs if tests passed).
-- [ ] ✅ Checkpoint: green build job after the test job. Why: what does `needs:` give you, and what would happen without it?
+- [x] ✅ Checkpoint: green build job after the test job. Why: what does `needs:` give you, and what would happen without it?
 - 🔨 Mini break-it:
 
 ## Step 5 — Push to GHCR, tagged with the commit hash
@@ -109,6 +109,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Timing: `npm ci` without cache (1ea81d8) vs with cache (this run): _fill in_.
 ### Step 4
 - Mistake (R65): Predict said the build fails without the `ca` secret. Secret mounts are optional by default → no file, build continues (Node only warns about the missing extra CA). `required=true` makes it mandatory. Correct part: the proxy problem is only on my PC, the runner needs no CA.
+- Job `build`: `needs: test`, own fresh VM → checkout again, `setup-buildx-action`, `build-push-action` with `context: 07-ci-cd/api` (full path, `uses:` ignores working-directory), `push: false`. Green.
+- Checkpoint (partly): "waits for test" ✓. Missing: build only runs if test PASSED (red test → build skipped); without `needs` jobs run in PARALLEL → image built (later pushed) even with failing tests. (Test job doesn't build anything, only lint + test.)
 ### Step 5
 ### Step 6
 ### Step 7
