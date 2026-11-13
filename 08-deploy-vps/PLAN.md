@@ -40,7 +40,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: you run `ufw enable` BEFORE `ufw allow 22`. What happens to your SSH session (now and next login)?
 - `adduser`, `usermod -aG sudo`, copy the key, test the new login in a SECOND terminal before closing the first, edit `sshd_config`, `systemctl reload ssh`, `ufw`. Automatic security updates (`unattended-upgrades`).
 - [x] ✅ Checkpoint: `ssh root@<vm ip>` refused, `ssh <you>@<vm ip>` works, `ufw status` shows 22/80/443. Why: why test in a second terminal before logging out?
-- 🔨 Mini break-it: (Claude picks)
+- 🔨 Mini break-it: `tazo` login → "Permission denied (publickey)" → `AllowUsers ubuntu` in a hidden drop-in. ✔
 
 ## Step 3 — Docker on the server + pull our image
 - Concept: install Docker Engine from Docker's apt repo, add the user to the `docker` group (⚠️ = root-equivalent: anyone in it can mount `/` into a container). GHCR package is private → server logs in with a PAT that can ONLY `read:packages` (least privilege).
@@ -121,6 +121,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Accidentally ran the ufw commands on my PC (prompt said `tazo@tazo-B460MDS3H`) → reset it (`ufw --force reset`). Habit: read the prompt before system commands. VM ufw: deny in, allow 22/80/443 ✓, unattended-upgrades enabled ✓. VM internet only via the corporate proxy (Step 3).
 - Checkpoint Q1 (partly): the old session stays connected even when the new config is broken → it's my lifeline to undo the change; the 2nd terminal tests a NEW login. Close the first only after the new one works.
 - Checkpoint Q2 ✗ (R83): `chown` → sshd reads the key as the user + StrictModes ignores keys in files others own/can write → "Permission denied (publickey)".
+- Mini break-it: `ssh tazo@...` → "Permission denied (publickey)" (key untouched). Logged in via `multipass shell` → `journalctl -u ssh` → "User tazo ... not allowed because not listed in AllowUsers" ✓. Then looked for the keys (wrong direction: the log said sshd refused BEFORE checking the key). `grep -r AllowUsers /etc/ssh/` → `05-local.conf: AllowUsers ubuntu` → removed, reload → login OK. Lesson: the same client message can have many causes; the SERVER log tells the real one.
 ### Step 3
 ### Step 4
 ### Step 5
