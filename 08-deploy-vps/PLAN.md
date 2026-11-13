@@ -107,6 +107,10 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Q2 (R35 ✓): `"8080:80"` → browser + firewall use 8080 (host), nginx listens on 80 inside the container.
 - Q3 (R33 ✓): plain `docker compose` reads only `docker-compose.yaml` (+ `compose.override.yaml` if it existed) → no prod override → no `restart: unless-stopped`. On the server we'll set `COMPOSE_FILE` in `.env` so nobody can forget it.
 ### Step 1
+- Predict (partly): private key on the server → risk ✓ (anyone reading the server gets my key → logs in as me wherever my public key is trusted). Missing: login doesn't even work (`authorized_keys` needs the PUBLIC key). SSH login = private key SIGNS a challenge, public key verifies (not decrypt).
+- Setup hiccups (corporate proxy): `snap install` → "unable to contact snap store" → snapd ignores shell proxy vars → `snap set system proxy.http/https`. `multipass launch 24.04` → "Remote release unreachable": the snap has its own CA list (no MIA CA) → downloaded the cloud image with curl → `multipass launch file:///home/tazo/vm-images/noble.img`. VM `vps` = 10.97.0.133 (private, only my PC reaches it; NAT for its outgoing traffic).
+- `!` commands can't answer prompts → interactive ssh in a normal terminal ("Host key verification failed" = couldn't ask yes/no).
+- Mistake (R80): thought the first-connect question is about giving my public key. It's the SERVER's host key → `known_hosts` → protects against man-in-the-middle.
 ### Step 2
 ### Step 3
 ### Step 4
