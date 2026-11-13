@@ -56,4 +56,5 @@ When the user starts a project (from `ROADMAP.md` or a pasted description):
 - Node v22, npm 10, git 2.53 installed (checked 2026-10-29). Workspace is not a git repo yet.
 - TWO Docker engines exist: `desktop-linux` context (Docker Desktop, the user's current/default context) and `default` context (native engine, /var/run/docker.sock).
 - The `ms-*` stack (/home/tazo/Desktop/projects/ms) lived on the `default` (native) engine. On 2026-10-28 the native engine was disabled (`systemctl disable --now docker.service docker.socket`, not uninstalled; ms data kept but user said it's test data). Ports 8080/5432/6379 are now free. Re-enable: `sudo systemctl enable --now docker.service docker.socket`.
-- User has passwordless sudo but prefers to run sudo/system-changing commands themselves (with `!`); give them the command instead of running it.
+- User has passwordless sudo. Since 2026-11-13 Claude may run sudo itself ("you can use sudo you have access"). Still say what a system-changing command does, and keep learning commands for the user where practical.
+- Snap store needs the proxy set for snapd: `snap set system proxy.http/https=http://proxy.mia.gov.ge:3128` (done 2026-11-13). Multipass 1.17 installed via snap.
