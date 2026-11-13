@@ -114,6 +114,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint ✓ (mostly): server stores my public KEY (said "ip", slip) in `authorized_keys`; my PC signs with the private key, which never leaves it. Keys can't be guessed/phished like passwords.
 - Mini break-it: VM's host keys regenerated → ssh refuses: "REMOTE HOST IDENTIFICATION HAS CHANGED". My guess: compare my public key with cloud-init ✗ (R80 again, my key wasn't involved). Fix: check the server's real fingerprint out-of-band (`multipass exec vps -- ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`) = the one in the warning → `ssh-keygen -R 10.97.0.133` → reconnect, accept. Never just delete the old key without checking: that's exactly what an attacker hopes for.
 ### Step 2
+- Predict (2/3): `ufw enable` before `allow 22` → current session survives (already-established connection) ✓; way back in = `multipass shell`/`exec`, not over the network (real VPS: provider's web console) ✓. Mistake (R81): thought the next login fails because of the "no root" sshd rule. It's the firewall: packets to 22 are dropped → `ssh` hangs, "Connection timed out", for every user. Timeout = firewall/network, "Permission denied" = sshd auth.
 ### Step 3
 ### Step 4
 ### Step 5
