@@ -32,8 +32,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: a VPS = a Linux VM in a data center with a public IP. Ours = the same VM on my PC (Multipass, KVM), private IP only. SSH key pair: PRIVATE key stays on my PC (`~/.ssh/id_ed25519`), PUBLIC key goes on the server (`~/.ssh/authorized_keys`). The server proves you have the private key without it ever leaving your PC.
 - 🤔 Predict: you accidentally upload your PRIVATE key to the server instead of the public one. What's the risk, and does login even work?
 - `sudo snap install multipass`, `ssh-keygen -t ed25519`, `multipass launch 24.04 --name vps` with a cloud-init that adds my public key (like a provider's "add SSH key" box), `ssh ubuntu@<vm ip>`. Look around: `uname -a`, `df -h`, `free -h`, `ip a`.
-- [ ] ✅ Checkpoint: logged in without a password. Why: what does the server store, and why is that safer than a password?
-- 🔨 Mini break-it: (Claude picks)
+- [x] ✅ Checkpoint: logged in without a password. Why: what does the server store, and why is that safer than a password?
+- 🔨 Mini break-it: VM host keys regenerated → "REMOTE HOST IDENTIFICATION HAS CHANGED". ✔ (explained)
 
 ## Step 2 — Harden the server: user, SSH, firewall
 - Concept: never work as `root` → own user with `sudo`. `sshd_config`: `PermitRootLogin no`, `PasswordAuthentication no`. Firewall `ufw`: default deny incoming, allow 22/80/443. ⚠️ Docker publishes ports by writing its OWN iptables rules → a published port can bypass `ufw` (only publish what must be public).
@@ -111,6 +111,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Setup hiccups (corporate proxy): `snap install` → "unable to contact snap store" → snapd ignores shell proxy vars → `snap set system proxy.http/https`. `multipass launch 24.04` → "Remote release unreachable": the snap has its own CA list (no MIA CA) → downloaded the cloud image with curl → `multipass launch file:///home/tazo/vm-images/noble.img`. VM `vps` = 10.97.0.133 (private, only my PC reaches it; NAT for its outgoing traffic).
 - `!` commands can't answer prompts → interactive ssh in a normal terminal ("Host key verification failed" = couldn't ask yes/no).
 - Mistake (R80): thought the first-connect question is about giving my public key. It's the SERVER's host key → `known_hosts` → protects against man-in-the-middle.
+- Checkpoint ✓ (mostly): server stores my public KEY (said "ip", slip) in `authorized_keys`; my PC signs with the private key, which never leaves it. Keys can't be guessed/phished like passwords.
+- Mini break-it: VM's host keys regenerated → ssh refuses: "REMOTE HOST IDENTIFICATION HAS CHANGED". My guess: compare my public key with cloud-init ✗ (R80 again, my key wasn't involved). Fix: check the server's real fingerprint out-of-band (`multipass exec vps -- ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`) = the one in the warning → `ssh-keygen -R 10.97.0.133` → reconnect, accept. Never just delete the old key without checking: that's exactly what an attacker hopes for.
 ### Step 2
 ### Step 3
 ### Step 4
