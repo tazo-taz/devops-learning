@@ -3,9 +3,9 @@
 **Goal:** On every push: run lint and tests, build the Docker image, and push it to a registry (GitHub Container Registry, `ghcr.io`), tagged with the commit hash.
 **You learn:** pipelines, image registries, secrets in CI, and versioning.
 **Done when:**
-- [ ] a `git push` that touches `07-ci-cd/` automatically runs lint + tests and produces a new image `ghcr.io/tazo-taz/...:<commit sha>` in the registry
+- [x] a `git push` that touches `07-ci-cd/` automatically runs lint + tests and produces a new image `ghcr.io/tazo-taz/...:<commit sha>` in the registry
 - [x] a failing test stops the pipeline BEFORE any image is pushed
-- [ ] (extra) CI starts the whole compose stack with the new image and `curl`s through nginx (smoke test), using CI secrets instead of a committed `.env`
+- [x] (extra) CI starts the whole compose stack with the new image and `curl`s through nginx (smoke test), using CI secrets instead of a committed `.env`
 
 > From project 6: nginx on port 80 in front of `web` + 2 api copies (`upstream` + `zone`), Redis cache, dev/prod compose overrides, one-shot `migrate`.
 > Problem now: every check and build happens by hand on MY PC ("works on my machine"). Nobody stops a broken commit, and there is no stored, versioned image a server could pull (project 8 needs exactly that).
@@ -78,9 +78,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Walk through the workflow file top to bottom: for each part say WHAT it does, WHY it's there, WHAT breaks without it. Plus 2–3 "what would you reach for when X?" questions. Lookups are fine.
 - [x] ✅ Checkpoint: every part explained; only wrong ideas / unknown features → `REVIEW.md`.
 
-## Step 10 — Cleanup + cheat sheet
+## Step 10 — Cleanup + cheat sheet ✔
 - Delete test images/tags you don't need (GHCR + local), `docker image prune`. `CHEATSHEET.md` as questions; I answer, Claude puts 💡 suggestions in the file.
-- [ ] ✅ Checkpoint: "Done when" boxes ticked, Summary written.
+- [x] ✅ Checkpoint: "Done when" boxes ticked, Summary written.
 
 ---
 
@@ -143,9 +143,19 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - `smoke` job: needs/permissions/working-dir/sha/.env/up ✓, ci override + `--no-build` ✓. R71: why pull instead of rebuilding → build once, test + deploy THE SAME image (private package → login). R72: no `always()` → cleanup SKIPPED after a failure (default `if: success()`), not "non-stop".
 - "Reach for" questions skipped (R73): `services:`, `strategy: matrix`, environments + required reviewers.
 ### Step 10
-- ⏸ Paused 2026-11-12. TODO when back: cleanup (old sha versions in GHCR, local `docker rmi` + `image prune`, delete `test-branch`), then Claude creates CHEATSHEET.md → answers → Summary + "Done when" + ROADMAP row.
+- Cleanup ✔ (2026-11-12): old GHCR versions, local images, `test-branch` deleted. CHEATSHEET.md created (16 + 4 review: R1, R14, R8, R11).
+- Cheat sheet checked 2026-11-13: 18 💡 first round, then answers written in for the rest (user asked). New REVIEW rows R74–R79. Lesson for Claude: label questions 🧪 made-up vs 📄 real file:line (user was rightly annoyed by unlabeled hypotheticals).
 
 ---
 
 ## Summary
-(written at the end)
+Finished 2026-11-13. One workflow (`.github/workflows/ci.yml`, repo root) runs on every push that touches `07-ci-cd/`:
+- **test**: checkout → setup-node 24 with the `~/.npm` cache → `npm ci` → lint → test.
+- **build** (`needs: test`, only main + `v*` tags): login to GHCR with `GITHUB_TOKEN` (`packages: write`), metadata-action tags (full sha, `latest` on main, `1.0.0` from `v1.0.0`), build + push.
+- **smoke** (`needs: build`): pulls THAT image by sha, `.env` from CI secrets, starts the whole stack (`docker-compose.ci.yaml`, `--no-build`), `curl -f` through nginx, logs on failure, `down -v` always.
+
+Biggest lessons: CI = a clean machine with only the committed code; a red step stops everything after it (`needs`, `if: success()` default); skipped ≠ failed; login ≠ permission; build once and test/deploy the same image by sha; masking only hides the exact secret string.
+
+Weak spots → REVIEW: R61–R79 (npm ci, workflow location, runner = VM, cache = `~/.npm`, `needs`, `if:` defaults, lint vs tsc, semver).
+
+**Next topic suggestion:** project 08 deploys this exact GHCR image to a real server: the server pulls by sha (no build there), CI SSHes in after the smoke job, HTTPS in front of nginx, daily `pg_dump` backups.
