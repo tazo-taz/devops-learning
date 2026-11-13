@@ -23,7 +23,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ---
 
-## Step 0 — Warm-up (no notes)
+## Step 0 — Warm-up (no notes) ✔
 - 3 recall questions in chat: 1 from project 7, 2 open `REVIEW.md` items. Update streaks.
 
 # Phase A — local "VPS" (Multipass VM)
@@ -103,6 +103,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ## Notes / lessons learned
 ### Step 0
+- Q1 (P07, R75 ✓): feature-branch push → build SKIPPED by its `if:` (not main / `v*`), smoke skipped too (`needs: build`). Grey, not red.
+- Q2 (R35 ✓): `"8080:80"` → browser + firewall use 8080 (host), nginx listens on 80 inside the container.
+- Q3 (R33 ✓): plain `docker compose` reads only `docker-compose.yaml` (+ `compose.override.yaml` if it existed) → no prod override → no `restart: unless-stopped`. On the server we'll set `COMPOSE_FILE` in `.env` so nobody can forget it.
 ### Step 1
 ### Step 2
 ### Step 3
