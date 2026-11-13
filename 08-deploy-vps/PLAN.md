@@ -122,7 +122,17 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint Q1 (partly): the old session stays connected even when the new config is broken → it's my lifeline to undo the change; the 2nd terminal tests a NEW login. Close the first only after the new one works.
 - Checkpoint Q2 ✗ (R83): `chown` → sshd reads the key as the user + StrictModes ignores keys in files others own/can write → "Permission denied (publickey)".
 - Mini break-it: `ssh tazo@...` → "Permission denied (publickey)" (key untouched). Logged in via `multipass shell` → `journalctl -u ssh` → "User tazo ... not allowed because not listed in AllowUsers" ✓. Then looked for the keys (wrong direction: the log said sshd refused BEFORE checking the key). `grep -r AllowUsers /etc/ssh/` → `05-local.conf: AllowUsers ubuntu` → removed, reload → login OK. Lesson: the same client message can have many causes; the SERVER log tells the real one.
+### Step 2 (extra)
+- `sshd_config.d/*.conf` = drop-in files sshd reads via `Include` (pattern `x.d/` everywhere in Linux). `ssh tazo@ip` → `tazo` = server ACCOUNT → sshd checks `/home/tazo/.ssh/authorized_keys`; the key's trailing comment (`tazo@laptop`) is only a label. Real users: `getent passwd` UID ≥ 1000.
+- `AllowUsers` = SSH whitelist of accounts ✓; risk = forget/typo your own user → locked out ✓.
 ### Step 3
+- Predict ✓: pull before login → unauthorized/denied (private package). Read-only token: server only needs to pull ✓ + if the server is hacked, the leaked token can't push a poisoned image or touch my repos (least privilege).
+- 3a proxy: VM = new laptop in the office → copied MIA-ROOT/SUB CA (`scp`, `update-ca-certificates`) + apt proxy (`/etc/apt/apt.conf.d/95proxy`) → `apt update` ✓. (Real VPS won't need this.)
+- 3b Docker from Docker's apt repo (signing key + `docker.list`), daemon proxy in `/etc/docker/daemon.json` (`proxies`), `usermod -aG docker tazo`. Docker 29.9, Compose v5.7 ✓, `hello-world` ✓.
+- `docker.sock` permission denied → old shell started BEFORE `usermod`; groups are read at login → log out/in.
+- Plain `docker login` = Docker Hub, not GHCR → `docker login ghcr.io -u tazo-taz` + classic PAT with only `read:packages` (30 days) ✓ (stored unencrypted in `~/.docker/config.json` → another reason for read-only).
+- Mistake (R84): didn't know `docker` group = root-equivalent.
+- ⏸ PAUSED HERE (2026-11-13): next = `docker pull ghcr.io/tazo-taz/devops-api:34fdabf43fe049bb3a31b81c2d3663e7e5e95ee9` (last commit touching `07-ci-cd/`), `docker images`, then Step 3 checkpoint "why pull instead of build?" + mini break-it.
 ### Step 4
 ### Step 5
 ### Step 6
