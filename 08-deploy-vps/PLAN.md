@@ -137,6 +137,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint "why pull, not build on the server?" partly ✓: only tested images get pushed. Missed (R71 again): build once → the server runs the EXACT image CI tested (a rebuild could differ); plus the server needs no source code, git access or build tools (smaller attack surface, less CPU/RAM, faster).
 - 🔨 Mini break-it: `docker pull` → "proxyconnect tcp: dial ...:3129: connection refused". First guess "certificate" ✗ (no x509 in the error: read the error first). `docker info | grep -i proxy` (3129) vs apt's `95proxy` (3128) → wrong port in `/etc/docker/daemon.json` ✓ → fixed + `systemctl restart docker`. Why ✓: each program has its own proxy config. Plus: the DAEMON (root service) makes the registry connection, not the `docker` CLI → shell `https_proxy` doesn't help; change `daemon.json` + restart.
 ### Step 4
+- Predict: no `ports:` → DB reachable only on the Docker network ✓. Mistake (R85): thought ufw would block a published 5432; Docker's iptables rules bypass ufw → DB on the internet. Bind `127.0.0.1:` or don't publish.
 ### Step 5
 ### Step 6
 ### Step 7
