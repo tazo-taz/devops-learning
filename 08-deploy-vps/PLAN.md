@@ -46,7 +46,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: install Docker Engine from Docker's apt repo, add the user to the `docker` group (⚠️ = root-equivalent: anyone in it can mount `/` into a container). GHCR package is private → server logs in with a PAT that can ONLY `read:packages` (least privilege).
 - 🤔 Predict: the server runs `docker pull ghcr.io/tazo-taz/devops-api:<sha>` before `docker login`. What error do you get, and why not just use your full-access token?
 - Trust the MIA CA in the VM (proxy), install Docker, `docker login ghcr.io`, pull the newest main image by sha.
-- [ ] ✅ Checkpoint: `docker images` on the server shows the exact sha CI pushed. Why: why does the server pull instead of building from the source?
+- [x] ✅ Checkpoint: `docker images` on the server shows the exact sha CI pushed. Why: why does the server pull instead of building from the source?
 - 🔨 Mini break-it: (Claude picks)
 
 ## Step 4 — Deploy by hand with Compose
