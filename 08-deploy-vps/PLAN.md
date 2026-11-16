@@ -132,7 +132,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - `docker.sock` permission denied → old shell started BEFORE `usermod`; groups are read at login → log out/in.
 - Plain `docker login` = Docker Hub, not GHCR → `docker login ghcr.io -u tazo-taz` + classic PAT with only `read:packages` (30 days) ✓ (stored unencrypted in `~/.docker/config.json` → another reason for read-only).
 - Mistake (R84): didn't know `docker` group = root-equivalent.
-- ⏸ PAUSED HERE (2026-11-13): next = `docker pull ghcr.io/tazo-taz/devops-api:34fdabf43fe049bb3a31b81c2d3663e7e5e95ee9` (last commit touching `07-ci-cd/`), `docker images`, then Step 3 checkpoint "why pull instead of build?" + mini break-it.
+- VM "No route to host" after the PC slept: host bridge `mpqemubrzone1` was DOWN → `multipass stop --force` + `start` fixed it.
+- Pull of `34fdabf` → `not found` (≠ `unauthorized` = login OK, the tag just doesn't exist in GHCR) → pulled `2c1707d` (newest sha tag, same app code) ✓.
+- Checkpoint "why pull, not build on the server?" partly ✓: only tested images get pushed. Missed (R71 again): build once → the server runs the EXACT image CI tested (a rebuild could differ); plus the server needs no source code, git access or build tools (smaller attack surface, less CPU/RAM, faster).
 ### Step 4
 ### Step 5
 ### Step 6
