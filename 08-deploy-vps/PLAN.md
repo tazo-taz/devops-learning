@@ -53,7 +53,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: server needs only the compose files + nginx/web configs + `.env` (never in git; copied with `scp` or written on the server). Decided 2026-11-16: NO new override, reuse `COMPOSE_FILE=docker-compose.yaml:docker-compose.prod.yaml:docker-compose.ci.yaml` (ci = `image: ${API_IMAGE}`, prod = `restart: unless-stopped` + NODE_ENV; CI image = Dockerfile's last stage `prod`). Only nginx publishes ports. `up -d --no-build`.
 - 🤔 Predict: postgres has no `ports:` in our compose. Can someone on the internet reach the database? What would change if it had `ports: ["5432:5432"]` (remember the ufw/Docker note)?
 - Copy files to `~/app`, write `.env` with a NEW strong password, start, `curl http://<vm ip>/api/users` from my PC.
-- [ ] ✅ Checkpoint: the site works at `http://<vm ip>`, and it comes back after `sudo reboot`. Why: which setting brings the containers back after a reboot?
+- [x] ✅ Checkpoint: the site works at `http://<vm ip>`, and it comes back after `sudo reboot`. Why: which setting brings the containers back after a reboot?
 - 🔨 Mini break-it: (Claude picks)
 
 ## Step 5 — Local domain + HTTPS (own CA)
@@ -141,6 +141,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Predict: no `ports:` → DB reachable only on the Docker network ✓. Mistake (R85): thought ufw would block a published 5432; Docker's iptables rules bypass ufw → DB on the internet. Bind `127.0.0.1:` or don't publish.
 - Deployed by hand: scp compose files + nginx/web/web-nginx (no `api/` source), `.env` written on the server (new `openssl rand` password, `chmod 600`), `up -d --no-build` ✓. Only nginx publishes 80; postgres `5432/tcp` = exposed, not published ✓. GET + POST from my PC ✓.
 - 🔨 Real bug at the reboot test: site down, api "unhealthy". `docker compose ps -a` → only api Up; `grep restart` → only api had `restart: unless-stopped` (default = `no`). Fixed: added it to postgres/redis/nginx/web in `docker-compose.prod.yaml` (NOT migrate: one-shot).
+- Why ✓: migrate = one-shot, a restart policy would loop it; `unless-stopped` = comes back after crash/reboot unless I stopped it myself (`always` ignores that). 2nd reboot test ✓. (The reboot bug counted as Step 4's mini break-it.)
+- ⏸ PAUSED HERE (2026-11-16): next = Step 5 (local domain + HTTPS), start with its 🤔 Predict. VM may lose its network after the PC sleeps → `multipass stop --force vps && multipass start vps`.
 ### Step 5
 ### Step 6
 ### Step 7
