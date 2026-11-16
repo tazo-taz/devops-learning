@@ -139,6 +139,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🔨 Mini break-it: `docker pull` → "proxyconnect tcp: dial ...:3129: connection refused". First guess "certificate" ✗ (no x509 in the error: read the error first). `docker info | grep -i proxy` (3129) vs apt's `95proxy` (3128) → wrong port in `/etc/docker/daemon.json` ✓ → fixed + `systemctl restart docker`. Why ✓: each program has its own proxy config. Plus: the DAEMON (root service) makes the registry connection, not the `docker` CLI → shell `https_proxy` doesn't help; change `daemon.json` + restart.
 ### Step 4
 - Predict: no `ports:` → DB reachable only on the Docker network ✓. Mistake (R85): thought ufw would block a published 5432; Docker's iptables rules bypass ufw → DB on the internet. Bind `127.0.0.1:` or don't publish.
+- Deployed by hand: scp compose files + nginx/web/web-nginx (no `api/` source), `.env` written on the server (new `openssl rand` password, `chmod 600`), `up -d --no-build` ✓. Only nginx publishes 80; postgres `5432/tcp` = exposed, not published ✓. GET + POST from my PC ✓.
+- 🔨 Real bug at the reboot test: site down, api "unhealthy". `docker compose ps -a` → only api Up; `grep restart` → only api had `restart: unless-stopped` (default = `no`). Fixed: added it to postgres/redis/nginx/web in `docker-compose.prod.yaml` (NOT migrate: one-shot).
 ### Step 5
 ### Step 6
 ### Step 7

@@ -5,3 +5,13 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
+  # every long-running service must come back after a reboot / crash (default policy = "no")
+  postgres:
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+  nginx:
+    restart: unless-stopped
+  web:
+    restart: unless-stopped
+  # migrate: NO restart, it runs once and exits on purpose
