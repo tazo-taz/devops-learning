@@ -50,7 +50,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🔨 Mini break-it: (Claude picks)
 
 ## Step 4 — Deploy by hand with Compose
-- Concept: server needs only the compose files + nginx/web configs + `.env` (never in git; copied with `scp` or written on the server). A `docker-compose.server.yaml` override (Claude writes it, like `docker-compose.ci.yaml`): `image: ${API_IMAGE}`, `restart: unless-stopped`, only nginx publishes ports. `up -d --no-build`.
+- Concept: server needs only the compose files + nginx/web configs + `.env` (never in git; copied with `scp` or written on the server). Decided 2026-11-16: NO new override, reuse `COMPOSE_FILE=docker-compose.yaml:docker-compose.prod.yaml:docker-compose.ci.yaml` (ci = `image: ${API_IMAGE}`, prod = `restart: unless-stopped` + NODE_ENV; CI image = Dockerfile's last stage `prod`). Only nginx publishes ports. `up -d --no-build`.
 - 🤔 Predict: postgres has no `ports:` in our compose. Can someone on the internet reach the database? What would change if it had `ports: ["5432:5432"]` (remember the ufw/Docker note)?
 - Copy files to `~/app`, write `.env` with a NEW strong password, start, `curl http://<vm ip>/api/users` from my PC.
 - [ ] ✅ Checkpoint: the site works at `http://<vm ip>`, and it comes back after `sudo reboot`. Why: which setting brings the containers back after a reboot?
