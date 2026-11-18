@@ -152,6 +152,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - CA trusted (`update-ca-certificates`) → curl works without `-k` ✓. Why: explained by Claude (passport analogy). Q1 half right, but thought the browser already has the server's public key (R89); Q2 (what the CA signature adds) skipped by me.
 - 🔨 Mini break-it: key renamed on the VM → both http and https down. Found it: `docker compose logs nginx` → `[emerg] cannot load certificate key` + crash loop → `ls ~/app/certs` (looked at `/etc/nginx/certs` on the VM first: that path only exists INSIDE the container, the mount maps `~/app/certs` → it). Fixed (key back, restart) → 200 / 301 ✓.
 - Why port 80 also died: didn't know → whole config is all-or-nothing (R90). Step 5 done ✓.
+- ⏸ PAUSED HERE (2026-11-18): next = Step 6, its 🤔 Predict was asked but not answered yet (own CI key? what if it leaks?). VM may lose its network after the PC sleeps → `multipass stop --force vps && multipass start vps`. Old terminals need `source ~/.bashrc` for `.test` in `no_proxy`.
 ### Step 6
 ### Step 7
 ### Step 8
