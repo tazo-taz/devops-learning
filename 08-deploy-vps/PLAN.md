@@ -151,6 +151,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Server cert: key + CSR + SAN ext, signed by our CA, `openssl verify` OK. HTTPS config only in prod override (`nginx-prod/`, `443:443`, `./certs` mount), CI stays HTTP. Old terminal still had the old `no_proxy` → squid answered (`Server: squid`) → `source ~/.bashrc`. Then: http → 301 ✓, https → curl (60) "unable to get local issuer certificate" = exactly the predict (untrusted CA).
 - CA trusted (`update-ca-certificates`) → curl works without `-k` ✓. Why: explained by Claude (passport analogy). Q1 half right, but thought the browser already has the server's public key (R89); Q2 (what the CA signature adds) skipped by me.
 - 🔨 Mini break-it: key renamed on the VM → both http and https down. Found it: `docker compose logs nginx` → `[emerg] cannot load certificate key` + crash loop → `ls ~/app/certs` (looked at `/etc/nginx/certs` on the VM first: that path only exists INSIDE the container, the mount maps `~/app/certs` → it). Fixed (key back, restart) → 200 / 301 ✓.
+- Why port 80 also died: didn't know → whole config is all-or-nothing (R90). Step 5 done ✓.
 ### Step 6
 ### Step 7
 ### Step 8
