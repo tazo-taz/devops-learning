@@ -12,6 +12,11 @@ services:
     restart: unless-stopped
   nginx:
     restart: unless-stopped
+    ports:
+      - "443:443" # added to the base file's 80:80 (lists are merged)
+    volumes:
+      - ./nginx-prod:/etc/nginx/conf.d:ro # same target → replaces the base ./nginx mount
+      - ./certs:/etc/nginx/certs:ro # cert + key, copied by hand, git-ignored
   web:
     restart: unless-stopped
   # migrate: NO restart, it runs once and exits on purpose
