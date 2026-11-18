@@ -60,7 +60,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: a domain name → IP lookup. Locally `/etc/hosts`: `<vm ip> devops.test` (on the internet: a DNS `A` record). A cert is trusted when a CA the browser/OS trusts SIGNED it. Locally: we make our own CA (`openssl`), sign a cert for `devops.test`, trust the CA on my PC. nginx: port 80 = redirect to HTTPS, port 443 = `ssl_certificate` + `ssl_certificate_key` + the old routes. (Same idea as the corporate MIA CA!)
 - 🤔 Predict: you skip trusting our CA on your PC and `curl https://devops.test`. What does curl say, and why is the connection still encrypted?
 - `/etc/hosts` line, CA + cert with `openssl`, mount cert + key into nginx (key never in git), `listen 443 ssl`, redirect 80 → 443, allow 443 in ufw.
-- [ ] ✅ Checkpoint: `curl https://devops.test/api/users` works without `-k`, `http://` redirects. Why: what does the cert prove, and what does the CA's signature add?
+- [x] ✅ Checkpoint: `curl https://devops.test/api/users` works without `-k`, `http://` redirects. Why: what does the cert prove, and what does the CA's signature add?
 - 🔨 Mini break-it: (Claude picks)
 
 ## Step 6 — Zero-touch deploy from CI (self-hosted runner + SSH)
@@ -149,6 +149,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - VM lost its network again (ping "Destination Host Unreachable", ssh "No route to host") → `multipass stop --force vps && multipass start vps` fixed it. Browser uses GNOME "Ignored Hosts", terminal uses `no_proxy` in `~/.bashrc` → added `.test` to both.
 - CA in `~/devops-ca` (outside git). Didn't know why subject = issuer → root CA signs itself (R88).
 - Server cert: key + CSR + SAN ext, signed by our CA, `openssl verify` OK. HTTPS config only in prod override (`nginx-prod/`, `443:443`, `./certs` mount), CI stays HTTP. Old terminal still had the old `no_proxy` → squid answered (`Server: squid`) → `source ~/.bashrc`. Then: http → 301 ✓, https → curl (60) "unable to get local issuer certificate" = exactly the predict (untrusted CA).
+- CA trusted (`update-ca-certificates`) → curl works without `-k` ✓. Why: explained by Claude (passport analogy). Q1 half right, but thought the browser already has the server's public key (R89); Q2 (what the CA signature adds) skipped by me.
 ### Step 6
 ### Step 7
 ### Step 8
