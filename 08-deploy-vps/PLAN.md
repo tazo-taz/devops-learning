@@ -144,6 +144,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Why ✓: migrate = one-shot, a restart policy would loop it; `unless-stopped` = comes back after crash/reboot unless I stopped it myself (`always` ignores that). 2nd reboot test ✓. (The reboot bug counted as Step 4's mini break-it.)
 - ⏸ PAUSED HERE (2026-11-16): next = Step 5 (local domain + HTTPS), start with its 🤔 Predict. VM may lose its network after the PC sleeps → `multipass stop --force vps && multipass start vps`.
 ### Step 5
+- Mistake (predict): thought a local domain might not need a trusted CA since it skips the proxy → no, curl checks WHO SIGNED the cert, whatever the route (R86).
+- Mistake (predict): "encrypted because port 443" → no, the TLS handshake encrypts; trust only proves the server is the real one (R87).
 ### Step 6
 ### Step 7
 ### Step 8
