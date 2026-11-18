@@ -146,6 +146,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 5
 - Mistake (predict): thought a local domain might not need a trusted CA since it skips the proxy → no, curl checks WHO SIGNED the cert, whatever the route (R86).
 - Mistake (predict): "encrypted because port 443" → no, the TLS handshake encrypts; trust only proves the server is the real one (R87).
+- VM lost its network again (ping "Destination Host Unreachable", ssh "No route to host") → `multipass stop --force vps && multipass start vps` fixed it. Browser uses GNOME "Ignored Hosts", terminal uses `no_proxy` in `~/.bashrc` → added `.test` to both.
+- CA in `~/devops-ca` (outside git). Didn't know why subject = issuer → root CA signs itself (R88).
 ### Step 6
 ### Step 7
 ### Step 8
