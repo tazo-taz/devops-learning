@@ -101,6 +101,7 @@ Each new cheat sheet re-asks 3–4 open items in a **new form** (different scena
 | R88 | Root CA = self-signed | Step 5 (P08): didn't know why a CA cert's subject = issuer. A root CA has nobody above it, so it signs ITSELF. It's trusted only because it's installed in the OS/browser trust store, not because of the signature. Normal certs: subject = the site, issuer = the CA that signed it. | P08 | | 0 |
 | R89 | Where the server's public key comes from | Step 5 checkpoint (P08): thought the browser already HAS the server's public key. No: it arrives INSIDE the cert during the handshake. Server signs handshake data with its private key → proves it owns the key in THAT cert. An attacker can do the same with their own cert + key, so only the CA's signature (CA public key = what's preinstalled) ties the key to the name. | P08 | | 0 |
 | R90 | One bad line kills all of nginx | Step 5 mini break-it (P08): didn't know why port 80 died when only the HTTPS key was missing. nginx loads its WHOLE config at start; any error (missing file, typo) → `[emerg]` → the process exits → nothing listens on ANY port. Hence `nginx -t` before reload, and one config error = full outage. | P08 | | 0 |
+| R91 | Testing ONE specific SSH key | Step 6 (P08): didn't know `-o IdentitiesOnly=yes`. Without it ssh also tries every key in `~/.ssh` / the agent, so a test with `-i ci_key` can pass using my PERSONAL key → false OK, CI fails later. `IdentitiesOnly=yes` = use only the `-i` key. | P08 | | 0 |
 
 ## Mastered
 
