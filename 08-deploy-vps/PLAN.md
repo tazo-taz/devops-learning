@@ -156,6 +156,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 6
 - Predict ✓: separate CI key → I can revoke one (e.g. a lost laptop's key) without breaking the other. Leak → delete that line from `authorized_keys`, make a new pair, update the secret.
 - Didn't know `IdentitiesOnly=yes` → only try the `-i` key, otherwise my personal key can make the test pass by accident (R91).
+- CI key on the VM tested with `IdentitiesOnly=yes` ✓. Secrets in environment `production`: SSH_KEY, SSH_HOST, SSH_USER, SSH_KNOWN_HOSTS (`ssh-keyscan`).
+- Didn't know why not `StrictHostKeyChecking=no` → R80 again: CI would trust ANY server at that IP → a fake server gets the files + `.env`, can serve its own version.
+- Runner: native in `~/actions-runner` (outside git) instead of a container: it uses my PC's proxy env + trusted MIA CA directly.
 ### Step 7
 ### Step 8
 ### Step 9
