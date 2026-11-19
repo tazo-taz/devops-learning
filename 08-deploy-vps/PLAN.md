@@ -154,6 +154,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Why port 80 also died: didn't know → whole config is all-or-nothing (R90). Step 5 done ✓.
 - ⏸ PAUSED HERE (2026-11-18): next = Step 6, its 🤔 Predict was asked but not answered yet (own CI key? what if it leaks?). VM may lose its network after the PC sleeps → `multipass stop --force vps && multipass start vps`. Old terminals need `source ~/.bashrc` for `.test` in `no_proxy`.
 ### Step 6
+- Predict ✓: separate CI key → I can revoke one (e.g. a lost laptop's key) without breaking the other. Leak → delete that line from `authorized_keys`, make a new pair, update the secret.
 ### Step 7
 ### Step 8
 ### Step 9
