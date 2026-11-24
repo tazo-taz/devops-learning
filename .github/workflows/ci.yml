@@ -154,7 +154,7 @@ jobs:
         # no source code, no .env, no certs: only what `docker compose` needs to run the images
         run: |
           scp $SSH_OPTS docker-compose.yaml docker-compose.prod.yaml docker-compose.ci.yaml "$TARGET:app/"
-          scp $SSH_OPTS -r nginx nginx-prod "$TARGET:app/"
+          scp $SSH_OPTS -r nginx nginx-prod scripts "$TARGET:app/"
 
       - name: Pull + start this commit's images
         # .env on the server = the CURRENT release: replace the two image lines, keep the secrets
