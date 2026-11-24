@@ -160,6 +160,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Didn't know why not `StrictHostKeyChecking=no` → R80 again: CI would trust ANY server at that IP → a fake server gets the files + `.env`, can serve its own version.
 - Runner: native in `~/actions-runner` (outside git) instead of a container: it uses my PC's proxy env + trusted MIA CA directly.
 - Claude wrote: `web/Dockerfile` (html + config baked in → `devops-web` image; `web/html`, `web/nginx`), compose `web: build: web` (+ `image: ${WEB_IMAGE}` in the CI override, live mount only in dev), `ci.yml` → `ci-08`: build matrix (api + web), smoke checks both, `deploy` job (self-hosted, `environment: production`, `concurrency`, key in `$RUNNER_TEMP`, scp compose + nginx, rewrite image lines in server `.env`, pull + up, check site + running image).
+- Runner registered (folder `~/Desktop/projects/actions-runner`, Default group). Asked how GitHub reaches my PC: it doesn't, the runner long-polls OUT to GitHub, gets the job as the answer, runs the steps locally; the VM only sees plain ssh/scp logins (`ci.yml` deploy job). On a real VPS → `ubuntu-latest` again.
+- First CI deploy `1ea4ba1` ✓: page shows "Deployed by CI", api + web containers run `:1ea4ba1…`.
 ### Step 7
 ### Step 8
 ### Step 9
