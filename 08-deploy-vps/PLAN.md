@@ -168,6 +168,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Re-run → v2 live, containers on `:adc0e03…` ✓. Step 6 done ✓.
 ### Step 7
 - Predict ✓ (order): restore first, then migrate. Conflict made concrete: migrate first → dump's `CREATE TABLE` fails "already exists" + rows collide; restore first → dump brings `migrations` table → migrate runs only newer ones.
+- Claude wrote `scripts/backup.sh` (pg_dump inside the container, gzip, .tmp → mv, keep 7), CI copies `scripts/`. Didn't know `pipefail` (R95) or why `~/backups` is outside `~/app` (deploy area vs data).
 ### Step 8
 ### Step 9
 ### Step 10
