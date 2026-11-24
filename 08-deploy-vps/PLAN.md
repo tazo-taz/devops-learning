@@ -163,6 +163,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Runner registered (folder `~/Desktop/projects/actions-runner`, Default group). Asked how GitHub reaches my PC: it doesn't, the runner long-polls OUT to GitHub, gets the job as the answer, runs the steps locally; the VM only sees plain ssh/scp logins (`ci.yml` deploy job). On a real VPS → `ubuntu-latest` again.
 - First CI deploy `1ea4ba1` ✓: page shows "Deployed by CI", api + web containers run `:1ea4ba1…`.
 - Checkpoint (rollback) ✗ first: thought `.env` is baked into the image (R92) and wanted to `docker build` the old version (R71 again). Then: change the `:<sha>` in `.env` to the previous good one ✓, but `docker compose restart` ✗ (R93) → `pull` + `up -d` recreates with the new image.
+- 🔨 Mini break-it: CI key commented out (`#`) in `authorized_keys` → page not updated, deploy log `Permission denied (publickey)`. First ssh'd from the VM to itself (prompt `tazo@vps`!) → "authenticity can't be established" = the VM's own known_hosts, not the break. `sudo journalctl -u ssh` → CI attempt = `Connection closed by authenticating user ... [preauth]` → `cat ~/.ssh/authorized_keys` → found `#` ✓. Why ✓: commented = ignored = key missing; CI uses only its own key (`IdentitiesOnly`).
+- Learned: sshd matches the exact key text, the comment is only a label; the key works only for the user whose `authorized_keys` holds it; options `from=`, `command=`, `restrict`. Thought the private key is sent after the public one (R94).
 ### Step 7
 ### Step 8
 ### Step 9
