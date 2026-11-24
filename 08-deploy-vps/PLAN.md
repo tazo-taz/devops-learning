@@ -68,7 +68,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Decided 2026-11-16: `web/` is only MOUNTED now → a `web/index.html` change would NOT go live by pulling images. Add a `devops-web` image (nginx:alpine + COPY html/config) built in CI, and the deploy job also syncs the compose files (+ nginx config) with scp/rsync. Only `.env` stays manual (secrets never in git/images).
 - 🤔 Predict: why give CI its own key instead of copying your personal private key into the secret? What do you do if the CI key leaks?
 - Point `ci.yml` at `08-deploy-vps/`, start the runner, add the deploy job, push a visible change (e.g. text in `web/index.html`) → watch it go live.
-- [ ] ✅ Checkpoint: a push to main changes the live site with no manual step, and the running container's image = that commit's sha. Why: how do you roll back if the new version is broken?
+- [x] ✅ Checkpoint: a push to main changes the live site with no manual step, and the running container's image = that commit's sha. Why: how do you roll back if the new version is broken?
 - 🔨 Mini break-it: (Claude picks)
 
 ## Step 7 — Daily Postgres backups + restore
@@ -164,7 +164,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - First CI deploy `1ea4ba1` ✓: page shows "Deployed by CI", api + web containers run `:1ea4ba1…`.
 - Checkpoint (rollback) ✗ first: thought `.env` is baked into the image (R92) and wanted to `docker build` the old version (R71 again). Then: change the `:<sha>` in `.env` to the previous good one ✓, but `docker compose restart` ✗ (R93) → `pull` + `up -d` recreates with the new image.
 - 🔨 Mini break-it: CI key commented out (`#`) in `authorized_keys` → page not updated, deploy log `Permission denied (publickey)`. First ssh'd from the VM to itself (prompt `tazo@vps`!) → "authenticity can't be established" = the VM's own known_hosts, not the break. `sudo journalctl -u ssh` → CI attempt = `Connection closed by authenticating user ... [preauth]` → `cat ~/.ssh/authorized_keys` → found `#` ✓. Why ✓: commented = ignored = key missing; CI uses only its own key (`IdentitiesOnly`).
-- Learned: sshd matches the exact key text, the comment is only a label; the key works only for the user whose `authorized_keys` holds it; options `from=`, `command=`, `restrict`. Thought the private key is sent after the public one (R94).
+- Learned: sshd matches the exact key text, the comment is only a label; the key works only for the user whose `authorized_keys` holds it; options `from=`, `command=`, `restrict`. Thought the private key is sent after the public one (R94). The public key is derived from the private one (`ssh-keygen -y -f`), so CI only needs the private.
+- Re-run → v2 live, containers on `:adc0e03…` ✓. Step 6 done ✓.
 ### Step 7
 ### Step 8
 ### Step 9
