@@ -167,6 +167,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Learned: sshd matches the exact key text, the comment is only a label; the key works only for the user whose `authorized_keys` holds it; options `from=`, `command=`, `restrict`. Thought the private key is sent after the public one (R94). The public key is derived from the private one (`ssh-keygen -y -f`), so CI only needs the private.
 - Re-run → v2 live, containers on `:adc0e03…` ✓. Step 6 done ✓.
 ### Step 7
+- Predict ✓ (order): restore first, then migrate. Conflict made concrete: migrate first → dump's `CREATE TABLE` fails "already exists" + rows collide; restore first → dump brings `migrations` table → migrate runs only newer ones.
 ### Step 8
 ### Step 9
 ### Step 10
