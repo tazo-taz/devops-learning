@@ -56,10 +56,7 @@ services:
       - api
       - web
   web:
-    image: nginx:alpine
-    volumes:
-      - ./web:/usr/share/nginx/html:ro
-      - ./web-nginx:/etc/nginx/conf.d:ro # its own config (SPA fallback)
+    build: web # web/Dockerfile: nginx:alpine + html/ + its own config (SPA fallback) baked in
   redis:
     image: redis:7-alpine
     healthcheck:

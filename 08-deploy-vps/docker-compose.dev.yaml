@@ -8,6 +8,9 @@ services:
     volumes:
       - ./api:/app
       - /app/node_modules
+  web:
+    volumes:
+      - ./web/html:/usr/share/nginx/html:ro # dev only: edit the HTML without rebuilding
   pgadmin:
     image: dpage/pgadmin4
     environment:

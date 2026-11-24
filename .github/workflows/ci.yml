@@ -1,11 +1,11 @@
-name: ci-07 # shown in the Actions tab
+name: ci-08 # shown in the Actions tab
 
 on:
-  push:
+  push: # ONLY push (no pull_request) → code from forks never runs on my self-hosted runner
     branches: ["**"] # every branch runs the tests
     tags: ["v*"] # a git tag like v1.0.0 also starts a run (paths: is NOT checked for tags)
     paths:
-      - "07-ci-cd/**" # only run when something in project 07 changes
+      - "08-deploy-vps/**" # only run when something in project 08 changes
       - ".github/workflows/ci.yml" # ...or this file itself
 
 jobs:
@@ -13,70 +13,75 @@ jobs:
     runs-on: ubuntu-latest # a fresh GitHub-hosted VM for every run
     defaults:
       run:
-        working-directory: 07-ci-cd/api # every `run:` step starts in this folder
+        working-directory: 08-deploy-vps/api # every `run:` step starts in this folder
     steps:
-      - uses: actions/checkout@v4 # download the repo's code into the empty workspace
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4 # install the Node version we use in the Dockerfile
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm # keep ~/.npm between runs, keyed by the lock file
-          cache-dependency-path: 07-ci-cd/api/package-lock.json # uses: ignores working-directory, so give the full path
+          cache: npm
+          cache-dependency-path: 08-deploy-vps/api/package-lock.json # uses: ignores working-directory
 
-      - run: npm ci # exact versions from the lock file
+      - run: npm ci
       - run: npm run lint
       - run: npm test
 
   build:
-    needs: test # only starts if the test job passed
+    needs: test
     # only main (reviewed code) and version tags make images; other branches stop after `test`
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest # a NEW fresh VM: nothing from the test job is here
+    runs-on: ubuntu-latest
     permissions:
-      contents: read # checkout the code
+      contents: read
       packages: write # allow GITHUB_TOKEN to push images to ghcr.io
-    env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api # full image name, without a tag
+    strategy:
+      matrix: # the same steps run twice in parallel: once per image
+        include:
+          - name: devops-api
+            context: 08-deploy-vps/api
+          - name: devops-web
+            context: 08-deploy-vps/web
     steps:
-      - uses: actions/checkout@v4 # this VM is empty too, so check out again
+      - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3 # BuildKit builder (needed for --mount=type=secret, cache, push)
+      - uses: docker/setup-buildx-action@v3
 
-      - uses: docker/login-action@v3 # `docker login ghcr.io` with the token GitHub creates for every run
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v5 # works out the tag list from the event (branch / git tag)
-        id: meta # so later steps can read its output: steps.meta.outputs.tags
+      - uses: docker/metadata-action@v5
+        id: meta
         with:
-          images: ${{ env.IMAGE }}
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}
           tags: |
             type=sha,format=long,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
-          # sha → always (full commit hash) | latest → only on main | semver → git tag v1.0.0 → image 1.0.0
 
       - uses: docker/build-push-action@v6
         with:
-          context: 07-ci-cd/api # uses: ignores working-directory → full path from the repo root
-          push: true # upload the image to the registry
-          tags: ${{ steps.meta.outputs.tags }} # the list metadata-action built
-          labels: ${{ steps.meta.outputs.labels }} # adds source repo + commit to the image metadata
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   smoke:
-    needs: build # test the image that was just pushed (skipped when build is skipped)
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read # pull our private image from ghcr.io
+      packages: read
     defaults:
       run:
-        working-directory: 07-ci-cd
+        working-directory: 08-deploy-vps
     env:
-      API_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api:${{ github.sha }} # exactly this commit's image
-      COMPOSE_FILE: docker-compose.yaml:docker-compose.ci.yaml # base + CI override (no dev/prod files)
+      API_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api:${{ github.sha }}
+      WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-web:${{ github.sha }}
+      COMPOSE_FILE: docker-compose.yaml:docker-compose.ci.yaml # base + CI override (plain HTTP)
     steps:
       - uses: actions/checkout@v4
 
@@ -86,9 +91,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create .env from secrets # .env is git-ignored, so the runner doesn't have it
+      - name: Create .env from secrets
         env:
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # repo secret → masked as *** in the log
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           {
             echo "DB_USER=app"
@@ -97,20 +102,83 @@ jobs:
           } > .env
 
       - name: Start the stack
-        run: docker compose up -d --no-build # --no-build: pull our image, don't build it here
+        run: docker compose up -d --no-build
 
       - name: Smoke test through nginx
         run: |
-          for i in $(seq 1 30); do # api waits for postgres + migrate, so retry for up to ~60s
-            if curl -fsS http://localhost/api/users; then echo; echo "smoke test OK"; exit 0; fi
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost/api/users && curl -fsS -o /dev/null http://localhost/; then
+              echo; echo "smoke test OK (api + web)"; exit 0
+            fi
             sleep 2
           done
-          echo "api never answered through nginx"; exit 1
+          echo "api or web never answered through nginx"; exit 1
 
       - name: Show logs if something failed
         if: failure()
         run: docker compose ps -a && docker compose logs --tail=50
 
       - name: Stop the stack
-        if: always() # clean up even after a failure
+        if: always()
         run: docker compose down -v
+
+  deploy:
+    needs: smoke # only an image that passed the smoke test goes live
+    if: github.ref == 'refs/heads/main' # tags make images but don't deploy (yet)
+    runs-on: self-hosted # the runner on MY PC: it can reach the private VM, GitHub's VMs can't
+    environment: production # secrets SSH_KEY / SSH_HOST / SSH_USER / SSH_KNOWN_HOSTS live here
+    concurrency: production # two pushes close together → deploys run one after the other, never at once
+    defaults:
+      run:
+        working-directory: 08-deploy-vps
+    env:
+      API_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-api:${{ github.sha }}
+      WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-web:${{ github.sha }}
+      TARGET: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write the SSH key + known_hosts
+        # $RUNNER_TEMP = this job's temp folder, NOT my ~/.ssh (the runner runs as me on my PC)
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 600 /dev/null "$RUNNER_TEMP/deploy_key"   # create it private BEFORE writing the key
+          printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/known_hosts"
+          # every later ssh/scp uses ONLY this key and ONLY this known_hosts (no fallback to my own)
+          echo "SSH_OPTS=-i $RUNNER_TEMP/deploy_key -o IdentitiesOnly=yes -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o BatchMode=yes" >> "$GITHUB_ENV"
+
+      - name: Copy compose files + nginx config to the server
+        # no source code, no .env, no certs: only what `docker compose` needs to run the images
+        run: |
+          scp $SSH_OPTS docker-compose.yaml docker-compose.prod.yaml docker-compose.ci.yaml "$TARGET:app/"
+          scp $SSH_OPTS -r nginx nginx-prod "$TARGET:app/"
+
+      - name: Pull + start this commit's images
+        # .env on the server = the CURRENT release: replace the two image lines, keep the secrets
+        run: |
+          ssh $SSH_OPTS "$TARGET" "set -e
+            cd app
+            sed -i '/^API_IMAGE=/d; /^WEB_IMAGE=/d' .env
+            echo 'API_IMAGE=$API_IMAGE' >> .env
+            echo 'WEB_IMAGE=$WEB_IMAGE' >> .env
+            docker compose pull
+            docker compose up -d --no-build --remove-orphans"
+
+      - name: Check the live site
+        run: |
+          for i in $(seq 1 30); do
+            # --noproxy: devops.test is on my LAN, the corporate proxy can't reach it
+            if curl -fsS --noproxy '*' --resolve devops.test:443:${{ secrets.SSH_HOST }} https://devops.test/api/users; then
+              echo; echo "live site OK"; break
+            fi
+            [ "$i" = 30 ] && { echo "site not answering"; exit 1; }
+            sleep 2
+          done
+          ssh $SSH_OPTS "$TARGET" "docker inspect -f '{{.Name}} → {{.Config.Image}}' app-api-1 app-web-1"
+
+      - name: Remove the key from disk
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deploy_key"

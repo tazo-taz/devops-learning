@@ -159,6 +159,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - CI key on the VM tested with `IdentitiesOnly=yes` ✓. Secrets in environment `production`: SSH_KEY, SSH_HOST, SSH_USER, SSH_KNOWN_HOSTS (`ssh-keyscan`).
 - Didn't know why not `StrictHostKeyChecking=no` → R80 again: CI would trust ANY server at that IP → a fake server gets the files + `.env`, can serve its own version.
 - Runner: native in `~/actions-runner` (outside git) instead of a container: it uses my PC's proxy env + trusted MIA CA directly.
+- Claude wrote: `web/Dockerfile` (html + config baked in → `devops-web` image; `web/html`, `web/nginx`), compose `web: build: web` (+ `image: ${WEB_IMAGE}` in the CI override, live mount only in dev), `ci.yml` → `ci-08`: build matrix (api + web), smoke checks both, `deploy` job (self-hosted, `environment: production`, `concurrency`, key in `$RUNNER_TEMP`, scp compose + nginx, rewrite image lines in server `.env`, pull + up, check site + running image).
 ### Step 7
 ### Step 8
 ### Step 9

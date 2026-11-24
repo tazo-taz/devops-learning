@@ -5,3 +5,5 @@ services:
     image: ${API_IMAGE} # e.g. ghcr.io/tazo-taz/devops-api:<commit sha>, set by the workflow
   migrate:
     image: ${API_IMAGE} # same image, only the command differs (migration:run)
+  web:
+    image: ${WEB_IMAGE} # e.g. ghcr.io/tazo-taz/devops-web:<commit sha>
