@@ -180,6 +180,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Didn't know enabled vs active (R98): enabled = starts at boot, active = running now; `stop` leaves it enabled.
 - Reboot question (guessed yes ✓): enabled → cron starts at boot → next night's backup runs; the missed one is lost (plain cron doesn't catch up; anacron / systemd timer `Persistent=true` do). A reboot would "fix" it and hide the cause. Step 7 done ✓.
 ### Step 8
+- Break 1 (firewall 443): symptom https spins, http 301. Checked: `/etc/hosts` ✓, ssh/http work → "port problem" ✓, `ss -tlnp` → docker-proxy listens on 0.0.0.0:443 ✓, `ufw status` allows 443 ✓. Stuck after that (R99): Docker ports skip ufw → `iptables -L DOCKER-USER -n -v` → `DROP tcp dpt:443` (434 pkts). Claude removed it (`iptables -D DOCKER-USER 1`) → https 200.
 ### Step 9
 ### Step 10
 ### Step 11
