@@ -47,21 +47,21 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: the server runs `docker pull ghcr.io/tazo-taz/devops-api:<sha>` before `docker login`. What error do you get, and why not just use your full-access token?
 - Trust the MIA CA in the VM (proxy), install Docker, `docker login ghcr.io`, pull the newest main image by sha.
 - [x] ✅ Checkpoint: `docker images` on the server shows the exact sha CI pushed. Why: why does the server pull instead of building from the source?
-- 🔨 Mini break-it: (Claude picks)
+- 🔨 Mini break-it: cron service stopped (done ✓)
 
 ## Step 4 — Deploy by hand with Compose
 - Concept: server needs only the compose files + nginx/web configs + `.env` (never in git; copied with `scp` or written on the server). Decided 2026-11-16: NO new override, reuse `COMPOSE_FILE=docker-compose.yaml:docker-compose.prod.yaml:docker-compose.ci.yaml` (ci = `image: ${API_IMAGE}`, prod = `restart: unless-stopped` + NODE_ENV; CI image = Dockerfile's last stage `prod`). Only nginx publishes ports. `up -d --no-build`.
 - 🤔 Predict: postgres has no `ports:` in our compose. Can someone on the internet reach the database? What would change if it had `ports: ["5432:5432"]` (remember the ufw/Docker note)?
 - Copy files to `~/app`, write `.env` with a NEW strong password, start, `curl http://<vm ip>/api/users` from my PC.
 - [x] ✅ Checkpoint: the site works at `http://<vm ip>`, and it comes back after `sudo reboot`. Why: which setting brings the containers back after a reboot?
-- 🔨 Mini break-it: (Claude picks)
+- 🔨 Mini break-it: cron service stopped (done ✓)
 
 ## Step 5 — Local domain + HTTPS (own CA)
 - Concept: a domain name → IP lookup. Locally `/etc/hosts`: `<vm ip> devops.test` (on the internet: a DNS `A` record). A cert is trusted when a CA the browser/OS trusts SIGNED it. Locally: we make our own CA (`openssl`), sign a cert for `devops.test`, trust the CA on my PC. nginx: port 80 = redirect to HTTPS, port 443 = `ssl_certificate` + `ssl_certificate_key` + the old routes. (Same idea as the corporate MIA CA!)
 - 🤔 Predict: you skip trusting our CA on your PC and `curl https://devops.test`. What does curl say, and why is the connection still encrypted?
 - `/etc/hosts` line, CA + cert with `openssl`, mount cert + key into nginx (key never in git), `listen 443 ssl`, redirect 80 → 443, allow 443 in ufw.
 - [x] ✅ Checkpoint: `curl https://devops.test/api/users` works without `-k`, `http://` redirects. Why: what does the cert prove, and what does the CA's signature add?
-- 🔨 Mini break-it: (Claude picks)
+- 🔨 Mini break-it: cron service stopped (done ✓)
 
 ## Step 6 — Zero-touch deploy from CI (self-hosted runner + SSH)
 - Concept: a **self-hosted runner** = GitHub's runner program on MY machine (in a container); it pulls jobs from GitHub over outgoing HTTPS, so GitHub never needs to reach my PC. `deploy` job: `runs-on: self-hosted`, `needs: smoke`, only main. ⚠️ Never let forked PRs run on a self-hosted runner (they'd run any code on my machine). SSH key for CI = a SEPARATE key pair (private part in a GitHub secret `SSH_KEY`, public part on the server), plus `SSH_HOST`, `known_hosts` (so CI can't be tricked into a fake server). On the server: `export API_IMAGE=...:<sha>; docker compose pull && docker compose up -d --no-build`. GitHub `environment: production` (R73) holds these secrets.
@@ -69,14 +69,14 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: why give CI its own key instead of copying your personal private key into the secret? What do you do if the CI key leaks?
 - Point `ci.yml` at `08-deploy-vps/`, start the runner, add the deploy job, push a visible change (e.g. text in `web/index.html`) → watch it go live.
 - [x] ✅ Checkpoint: a push to main changes the live site with no manual step, and the running container's image = that commit's sha. Why: how do you roll back if the new version is broken?
-- 🔨 Mini break-it: (Claude picks)
+- 🔨 Mini break-it: cron service stopped (done ✓)
 
 ## Step 7 — Daily Postgres backups + restore
 - Concept: `pg_dump` = a SQL snapshot of one DB (consistent, while it runs). Run it via `docker compose exec -T postgres pg_dump ...`, gzip, filename with the date, keep the last 7 (rotation), `cron` daily. A backup on the SAME server dies with the server → copy off-server (mention: object storage / my PC with `scp`). A backup you never restored = not a backup.
 - 🤔 Predict: you `down -v` (R19), then `up -d`. The migrate job runs again on the empty DB. Then you restore the dump. What could conflict, and in which order would you do it?
 - Script `backup.sh`, crontab line, check the log/output next day (or trigger by hand), restore into an EMPTY database and count the users.
-- [ ] ✅ Checkpoint: a dated `.sql.gz` exists, and after a restore into an empty DB the users are back. Why: why test the restore, not just the backup?
-- 🔨 Mini break-it: (Claude picks)
+- [x] ✅ Checkpoint: a dated `.sql.gz` exists, and after a restore into an empty DB the users are back. Why: why test the restore, not just the backup?
+- 🔨 Mini break-it: cron service stopped (done ✓)
 
 ## Step 8 — Break it
 - Claude breaks things one at a time in the local VM, gives only the symptom (from ROADMAP): firewall blocks port 443, the SSH key is missing in CI, the disk is full. (Restore into an empty DB is practiced in Step 7.)
@@ -178,6 +178,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Backup copied off-server: `scp` → `~/vps-backups/` on my PC ✓.
 - 🔨 Mini break-it: "no nightly backup, script works by hand". Checked crontab + script, asked if cron runs → `systemctl status cron` → `Active: inactive (dead)` (Loaded: enabled) ✓. Claude did `systemctl start cron`.
 - Didn't know enabled vs active (R98): enabled = starts at boot, active = running now; `stop` leaves it enabled.
+- Reboot question (guessed yes ✓): enabled → cron starts at boot → next night's backup runs; the missed one is lost (plain cron doesn't catch up; anacron / systemd timer `Persistent=true` do). A reboot would "fix" it and hide the cause. Step 7 done ✓.
 ### Step 8
 ### Step 9
 ### Step 10
