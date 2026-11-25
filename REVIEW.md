@@ -106,6 +106,7 @@ Each new cheat sheet re-asks 3–4 open items in a **new form** (different scena
 | R94 | SSH login: the private key never leaves | Step 6 (P08), also Step 1: asked if the client sends the public key, then the private one. No: it sends only the PUBLIC key (sshd finds that exact key in `authorized_keys`), then SIGNS a random challenge with the private key; the server checks the signature with the public key. The private key never leaves the client. | P08 | | 0 |
 | R95 | `set -o pipefail` | Step 7 (P08): didn't know it. A pipe's exit code = the LAST command's. `pg_dump | gzip > f`: pg_dump fails, gzip still succeeds → script says OK, the backup is empty/broken. `pipefail` → the pipe fails if ANY part fails. Usual script header: `set -euo pipefail`. | P08 | | 0 |
 | R91 | Testing ONE specific SSH key | Step 6 (P08): didn't know `-o IdentitiesOnly=yes`. Without it ssh also tries every key in `~/.ssh` / the agent, so a test with `-i ci_key` can pass using my PERSONAL key → false OK, CI fails later. `IdentitiesOnly=yes` = use only the `-i` key. | P08 | | 0 |
+| R96 | Cron's environment + output | Step 7 cron predict (P08): didn't name what differs under cron. Cron runs with a minimal env: PATH=/usr/bin:/bin, cwd = $HOME, no terminal, none of your `.bashrc`. Relative paths and tools outside PATH break ("works by hand, fails in cron"). And output has nowhere to go → `>> file.log 2>&1` or you never see the error. | P08 | | 0 |
 
 ## Mastered
 
