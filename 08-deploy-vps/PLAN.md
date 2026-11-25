@@ -175,6 +175,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Cron-like test (`env -i HOME=… PATH=/usr/bin:/bin`) ✓. `<user>` placeholder typed literally → bash `<` = input redirect. R19 ✓: `down -v` = containers + network + the project's volumes (pgdata = the DB), images stay. 3 users → backup `app-2026-11-25_1709.sql.gz`.
 - Restore ✓: `down -v` → `up -d postgres` only → `gunzip -c … | psql` → `up -d` → 3 users back, migrate "No migrations are pending" (dump brought the `migrations` table).
 - Checkpoint (partly, R97): got "the restore needs an empty DB / right order". Missed: a backup file can exist and still be useless (empty/cut-off dump, wrong DB, missing tables, only on the dead server, steps nobody knows) → only a real restore + count proves it.
+- Backup copied off-server: `scp` → `~/vps-backups/` on my PC ✓.
+- 🔨 Mini break-it: "no nightly backup, script works by hand". Checked crontab + script, asked if cron runs → `systemctl status cron` → `Active: inactive (dead)` (Loaded: enabled) ✓. Claude did `systemctl start cron`.
 ### Step 8
 ### Step 9
 ### Step 10
