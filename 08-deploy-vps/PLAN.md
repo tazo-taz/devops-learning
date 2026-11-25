@@ -171,7 +171,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Claude wrote `scripts/backup.sh` (pg_dump inside the container, gzip, .tmp → mv, keep 7), CI copies `scripts/`. Didn't know `pipefail` (R95) or why `~/backups` is outside `~/app` (deploy area vs data).
 - First backup ✓ (`~/backups/app-2026-11-24_1908.sql.gz`, tables `migrations` + `"user"`, 1 user). Table name is `"user"` (quoted), not `users`.
 - Cron predict (partly): said the 03:30 run could hit while Docker is still starting after a reboot (fair edge case; with `set -e` the run just fails and logs it, next night works). Missed the main one (R96): cron has a tiny env (PATH=/usr/bin:/bin, cwd = $HOME, no terminal) → relative paths / tools outside PATH break; our script `cd`s itself + `-T`. `>> log 2>&1` = cron has no screen, without it output + errors vanish.
-- ⏸ PAUSED HERE (2026-11-24): next = add the cron line (`crontab -e`: `30 3 * * * /home/tazo/app/scripts/backup.sh >> /home/tazo/backups/backup.log 2>&1`, check `crontab -l`), add 2–3 users on the site, then backup → lose data (`down -v`) → `up -d postgres` → restore (`gunzip -c … | docker compose exec -T postgres psql …`) → `up -d` → count users. Then copy a backup off-server (scp to PC), checkpoint why, mini break-it. Runner: `cd ~/Desktop/projects/actions-runner && ./run.sh` (needed for deploys).
+- Cron line added (`crontab -l` ✓; nano: Ctrl+O/Enter saves, Ctrl+X exits; the temp filename = keep it).
 ### Step 8
 ### Step 9
 ### Step 10
