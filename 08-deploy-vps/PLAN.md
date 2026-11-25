@@ -186,6 +186,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Break 2 why ✓: sshd only accepts a key whose PUBLIC half is in `authorized_keys`. Forgot the log: `sudo journalctl -u ssh`.
 - Break 3 (disk full): backup fails. `df -h` → `/dev/sda1` 100% ✓, backups tiny ✓, `du -xh / --max-depth=1 | sort -h` → /var → /var/log → `ls -lhS` → 8.2G `journal-archive.log` ✓. Fix: `rm` (checked `lsof` first: no process holding it, else the space stays used), removed leftover `.tmp` backup → 40%, backup OK.
 - Break 3 why ✓: full disk → no writes (postgres inserts/crash, docker pull, logs). Prevent: monitoring + alert at ~80% (cron check or Prometheus/Netdata/provider alerts) ✓; plus logrotate, Docker log limits (`max-size`), `docker system prune`. (Asked if disk = RAM: no, separate; only swap lives on disk.) Step 8 done ✓.
+- ⏸ PAUSED HERE (2026-11-25): next = Step 9 Explain-it run (walk the whole path, 2–3 "what would you reach for" questions). Runner: `cd ~/Desktop/projects/actions-runner && ./run.sh` (only needed for deploys). VM may lose network after PC sleep → `multipass stop --force vps && multipass start vps`.
 ### Step 9
 ### Step 10
 ### Step 11
