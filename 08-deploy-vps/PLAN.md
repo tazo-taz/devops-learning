@@ -172,6 +172,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - First backup ✓ (`~/backups/app-2026-11-24_1908.sql.gz`, tables `migrations` + `"user"`, 1 user). Table name is `"user"` (quoted), not `users`.
 - Cron predict (partly): said the 03:30 run could hit while Docker is still starting after a reboot (fair edge case; with `set -e` the run just fails and logs it, next night works). Missed the main one (R96): cron has a tiny env (PATH=/usr/bin:/bin, cwd = $HOME, no terminal) → relative paths / tools outside PATH break; our script `cd`s itself + `-T`. `>> log 2>&1` = cron has no screen, without it output + errors vanish.
 - Cron line added (`crontab -l` ✓; nano: Ctrl+O/Enter saves, Ctrl+X exits; the temp filename = keep it).
+- Cron-like test (`env -i HOME=… PATH=/usr/bin:/bin`) ✓. `<user>` placeholder typed literally → bash `<` = input redirect. R19 ✓: `down -v` = containers + network + the project's volumes (pgdata = the DB), images stay. 3 users → backup `app-2026-11-25_1709.sql.gz`.
 ### Step 8
 ### Step 9
 ### Step 10
