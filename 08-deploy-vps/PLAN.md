@@ -182,6 +182,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 8
 - Break 1 (firewall 443): symptom https spins, http 301. Checked: `/etc/hosts` ✓, ssh/http work → "port problem" ✓, `ss -tlnp` → docker-proxy listens on 0.0.0.0:443 ✓, `ufw status` allows 443 ✓. Stuck after that (R99): Docker ports skip ufw → `iptables -L DOCKER-USER -n -v` → `DROP tcp dpt:443` (434 pkts). Claude removed it (`iptables -D DOCKER-USER 1`) → https 200.
 - Break 1 why ✓ (mostly): DROP = no answer → client waits → timeout; refused = packet arrived, nobody listening (or REJECT).
+- Break 2 (CI key gone from server `authorized_keys`): deploy red. First checked GHCR login (wrong direction), then saw the public key wasn't accepted → listed `authorized_keys` → "devops CI key should be there" ✓. Claude re-added `devops_ci.pub`, tested with `-i ~/.ssh/devops_ci -o IdentitiesOnly=yes` ✓. Side find: an old `ubuntu@localhost` RSA key (multipass's) is also in tazo's authorized_keys → remove in cleanup.
 ### Step 9
 ### Step 10
 ### Step 11
