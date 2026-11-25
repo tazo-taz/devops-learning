@@ -177,6 +177,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint (partly, R97): got "the restore needs an empty DB / right order". Missed: a backup file can exist and still be useless (empty/cut-off dump, wrong DB, missing tables, only on the dead server, steps nobody knows) → only a real restore + count proves it.
 - Backup copied off-server: `scp` → `~/vps-backups/` on my PC ✓.
 - 🔨 Mini break-it: "no nightly backup, script works by hand". Checked crontab + script, asked if cron runs → `systemctl status cron` → `Active: inactive (dead)` (Loaded: enabled) ✓. Claude did `systemctl start cron`.
+- Didn't know enabled vs active (R98): enabled = starts at boot, active = running now; `stop` leaves it enabled.
 ### Step 8
 ### Step 9
 ### Step 10
