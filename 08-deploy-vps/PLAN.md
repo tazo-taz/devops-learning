@@ -81,7 +81,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ## Step 8 — Break it
 - Claude breaks things one at a time in the local VM, gives only the symptom (from ROADMAP): firewall blocks port 443, the SSH key is missing in CI, the disk is full. (Restore into an empty DB is practiced in Step 7.)
 - Loop: symptom → look (`curl -v`, `ufw status`, Actions log, `df -h`, `docker system df`, `journalctl`) → guess → test → fix → explain.
-- [ ] ✅ Checkpoint: all three found and explained.
+- [x] ✅ Checkpoint: all three found and explained.
 
 ## Step 9 — Explain-it run
 - Walk through the whole path: name lookup → firewall → nginx 80/443 → api/web → postgres; CI → GHCR → SSH → `compose pull/up`; cron → `pg_dump`. For each part say WHAT it does, WHY it's there, WHAT breaks without it. Plus 2–3 "what would you reach for when X?" questions. Lookups are fine.
@@ -185,6 +185,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Break 2 (CI key gone from server `authorized_keys`): deploy red. First checked GHCR login (wrong direction), then saw the public key wasn't accepted → listed `authorized_keys` → "devops CI key should be there" ✓. Claude re-added `devops_ci.pub`, tested with `-i ~/.ssh/devops_ci -o IdentitiesOnly=yes` ✓. Side find: an old `ubuntu@localhost` RSA key (multipass's) is also in tazo's authorized_keys → remove in cleanup.
 - Break 2 why ✓: sshd only accepts a key whose PUBLIC half is in `authorized_keys`. Forgot the log: `sudo journalctl -u ssh`.
 - Break 3 (disk full): backup fails. `df -h` → `/dev/sda1` 100% ✓, backups tiny ✓, `du -xh / --max-depth=1 | sort -h` → /var → /var/log → `ls -lhS` → 8.2G `journal-archive.log` ✓. Fix: `rm` (checked `lsof` first: no process holding it, else the space stays used), removed leftover `.tmp` backup → 40%, backup OK.
+- Break 3 why ✓: full disk → no writes (postgres inserts/crash, docker pull, logs). Prevent: monitoring + alert at ~80% (cron check or Prometheus/Netdata/provider alerts) ✓; plus logrotate, Docker log limits (`max-size`), `docker system prune`. (Asked if disk = RAM: no, separate; only swap lives on disk.) Step 8 done ✓.
 ### Step 9
 ### Step 10
 ### Step 11
