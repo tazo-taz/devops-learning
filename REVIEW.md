@@ -107,6 +107,7 @@ Each new cheat sheet re-asks 3–4 open items in a **new form** (different scena
 | R95 | `set -o pipefail` | Step 7 (P08): didn't know it. A pipe's exit code = the LAST command's. `pg_dump | gzip > f`: pg_dump fails, gzip still succeeds → script says OK, the backup is empty/broken. `pipefail` → the pipe fails if ANY part fails. Usual script header: `set -euo pipefail`. | P08 | | 0 |
 | R91 | Testing ONE specific SSH key | Step 6 (P08): didn't know `-o IdentitiesOnly=yes`. Without it ssh also tries every key in `~/.ssh` / the agent, so a test with `-i ci_key` can pass using my PERSONAL key → false OK, CI fails later. `IdentitiesOnly=yes` = use only the `-i` key. | P08 | | 0 |
 | R96 | Cron's environment + output | Step 7 cron predict (P08): didn't name what differs under cron. Cron runs with a minimal env: PATH=/usr/bin:/bin, cwd = $HOME, no terminal, none of your `.bashrc`. Relative paths and tools outside PATH break ("works by hand, fails in cron"). And output has nowhere to go → `>> file.log 2>&1` or you never see the error. | P08 | | 0 |
+| R97 | Why test restores | Step 7 checkpoint (P08): didn't see why a restore test matters if the file exists. The file can be useless: empty or cut off (pg_dump failed, pipefail missing), wrong DB/tables, too old (cron silently stopped), only on the server that died, and the restore steps (empty DB, order before migrate) were never practiced. You only find out at the worst moment → "a backup you never restored isn't a backup". | P08 | | 0 |
 
 ## Mastered
 
