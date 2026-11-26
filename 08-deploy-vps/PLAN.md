@@ -195,6 +195,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 10
 - Provider: DigitalOcean instead of Hetzner (Hetzner asked for ID verification), 1 GB droplet, same personal SSH key (a key identifies me, not a server). Network note: direct outbound port 22 is blocked, SSH to the VPS goes through the corporate proxy (ProxyCommand).
 - Mistake: typed the key file's path to see it → shell tried to EXECUTE it (`Permission denied`), then `sudo`. Reading a file = `cat <file>` (same as R82 in Step 2, streak stays 0).
+- User `tazo` + sudo + key copied (`rsync --archive --chown`) ✓, login as tazo and `sudo whoami` = root ✓. Predict ✓: an open root session survives the sshd reload, only new logins are refused. DigitalOcean already had password login off (droplet created with a key). Billing: a powered-off droplet still costs, only Destroy stops it.
+- Mistake: session dropped and I typed the sshd command on my PC (R101). Added `Host do` to `~/.ssh/config` (proxy tunnel + `ServerAliveInterval 30`) → `ssh do`.
 ### Step 11
 
 ---
