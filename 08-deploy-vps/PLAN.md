@@ -199,6 +199,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mistake: session dropped and I typed the sshd command on my PC (R101). Added `Host do` to `~/.ssh/config` (proxy tunnel + `ServerAliveInterval 30`) → `ssh do`.
 - sshd drop-in `10-hardening.conf` (root login + passwords off) ✓ root refused; ufw deny in, allow 22/80/443 ✓ (predict ✓: 22 must be allowed BEFORE `ufw enable`). Docker via `get.docker.com` (no proxy/CA needed: the droplet is directly on the internet ✓), `usermod -aG docker`, re-login → Docker 29, Compose v5.8 ✓. `ssh do` typed ON the server / `sudo do` → the alias lives in my PC's `~/.ssh/config`, and `ssh` is the program (R101).
 - DNS: own domain at Namecheap, added `A` record `devops` → droplet IP (root record left alone); visible on Google + Cloudflare resolvers ✓.
+- GHCR login with a read-only token ✓. First cert: `certbot certonly --standalone` (nothing on port 80 yet → Certbot runs its own mini web server for the HTTP-01 check) → `/etc/letsencrypt/live/<domain>/fullchain.pem` + `privkey.pem` ✓.
+- Mistake (R90 again): predicted "cert file missing → port 80 still works". No: nginx reads the whole config at start, one broken part (`cannot load certificate`) → it doesn't start at all → 80 and 443 both dead.
 ### Step 11
 
 ---
