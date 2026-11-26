@@ -3,10 +3,10 @@
 **Goal:** Rent a cheap VPS, install Docker, and run the stack there with Compose. Extend the pipeline so it SSHes in and deploys automatically. Add HTTPS with Let's Encrypt, plus automatic daily Postgres backups with `pg_dump` and cron.
 **You learn:** Linux servers, SSH, firewalls, domains and SSL, backups, and zero-touch deployment.
 **Done when:**
-- [ ] (local) pushing to main updates the site in the local VM at `https://devops.test` with no manual step
+- [x] (local) pushing to main updates the site in the local VM at `https://devops.test` with no manual step
 - [ ] (live) the same works on a rented VPS at `https://<your domain>` with a real Let's Encrypt cert, then the VPS is deleted
-- [ ] the server only accepts SSH with a key (no passwords, no root login) and the firewall only lets in 22, 80, 443
-- [ ] a daily `pg_dump` backup exists, and you restored one into an EMPTY database and saw the users come back
+- [x] the server only accepts SSH with a key (no passwords, no root login) and the firewall only lets in 22, 80, 443
+- [x] a daily `pg_dump` backup exists, and you restored one into an EMPTY database and saw the users come back
 
 > From project 7: CI tests → builds → pushes `ghcr.io/tazo-taz/devops-api:<sha>` → smoke-tests the whole stack with that image. But the image only lands in a registry; nobody runs it anywhere for real.
 > Problem now: "deployed" = running on a machine on the internet, with a real name, HTTPS, a firewall, and data that survives a disaster.
@@ -93,7 +93,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: what changes from local → real: public IP (anyone on the internet knocks on port 22 within minutes: `journalctl -u ssh`), a real DNS `A` record, a REAL cert from Let's Encrypt (HTTP-01 challenge: Certbot puts a token under `/.well-known/acme-challenge/`, Let's Encrypt fetches it over port 80 → proves I control the domain → 90-day cert, renewal + nginx reload), deploy job on `ubuntu-latest` → SSH to the public IP.
 - 🤔 Predict: you request the cert, but the DNS record still points at an old IP (or hasn't spread yet). What does Let's Encrypt see, and what does Certbot report?
 - Rent (Hetzner, hourly, smallest Ubuntu 24.04), repeat Steps 1–4 fast (notes from Phase A), DNS record (`dig +short`), Certbot webroot + nginx, switch the deploy job, push → live.
-- [ ] ✅ Checkpoint: `https://<your domain>` has a valid lock, a push to main updates it, `certbot renew --dry-run` passes. Why: why does HTTPS still need port 80 open?
+- [x] ✅ Checkpoint: `https://<your domain>` has a valid lock, a push to main updates it, `certbot renew --dry-run` passes. Why: why does HTTPS still need port 80 open?
 - Then: **delete the VPS** (stops the bill), remove the DNS record + CI secrets for it.
 
 ## Step 11 — Cleanup + cheat sheet
@@ -201,6 +201,12 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - DNS: own domain at Namecheap, added `A` record `devops` → droplet IP (root record left alone); visible on Google + Cloudflare resolvers ✓.
 - GHCR login with a read-only token ✓. First cert: `certbot certonly --standalone` (nothing on port 80 yet → Certbot runs its own mini web server for the HTTP-01 check) → `/etc/letsencrypt/live/<domain>/fullchain.pem` + `privkey.pem` ✓.
 - Mistake (R90 again): predicted "cert file missing → port 80 still works". No: nginx reads the whole config at start, one broken part (`cannot load certificate`) → it doesn't start at all → 80 and 443 both dead.
+- Live deploy: CI key added to the droplet, `~/app/.env` written on the server (new random DB password, `chmod 600`), secrets `SSH_HOST` + `SSH_KNOWN_HOSTS` updated (R80 again: forgot what known_hosts is → the SERVER's public host key from `/etc/ssh/ssh_host_ed25519_key.pub`, so CI knows it talks to the real server). SSH key (CI → server) ≠ GHCR token (server → registry).
+- New files: `nginx-live/default.conf` + `docker-compose.live.yaml` (mounts `/etc/letsencrypt` + `/var/www/certbot`), deploy job on `ubuntu-latest`. First push hung: old run #56 was queued for the self-hosted runner and held `concurrency: production` → cancelled it → deploy green. `https://devops.tazojanelidze.xyz` 200 with a valid Let's Encrypt cert, http → 301, containers on the pushed sha ✓.
+- Renewal: `certbot reconfigure --webroot -w /var/www/certbot --deploy-hook "docker exec app-nginx-1 nginx -s reload"`, `certbot renew --dry-run` ✓.
+- Office network: its DNS answers 127.0.0.1/::1 for the new name → the proxy error page ("Connection to ::1 failed") is NOT the server's fault; test from the server or a phone on mobile data.
+- Checkpoint why ✓: port 80 stays open for the http → https redirect AND for Let's Encrypt's check at every renewal (closed → renewals fail → cert expires in ≤ 90 days).
+- 🔨 Mini break-it: site dead on 80 + 443 → found nginx stopped, started it ✓. Why ✓: `unless-stopped` doesn't restart a container that was stopped by hand.
 ### Step 11
 
 ---

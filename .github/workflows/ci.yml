@@ -124,7 +124,9 @@ jobs:
 
   deploy:
     needs: smoke # only an image that passed the smoke test goes live
-    if: github.ref == 'refs/heads/main' # tags make images but don't deploy (yet)
+    # tags make images but don't deploy (yet). DEPLOY_ENABLED = repo variable (Settings → Variables):
+    # set it to 'true' only while a server exists, otherwise every push would fail on a deleted VPS
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest # the VPS has a public IP, so GitHub's own VMs can reach it (the local VM needed my self-hosted runner)
     environment: production # secrets SSH_KEY / SSH_HOST / SSH_USER / SSH_KNOWN_HOSTS live here
     concurrency: production # two pushes close together → deploys run one after the other, never at once
