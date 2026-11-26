@@ -188,6 +188,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Break 3 why ✓: full disk → no writes (postgres inserts/crash, docker pull, logs). Prevent: monitoring + alert at ~80% (cron check or Prometheus/Netdata/provider alerts) ✓; plus logrotate, Docker log limits (`max-size`), `docker system prune`. (Asked if disk = RAM: no, separate; only swap lives on disk.) Step 8 done ✓.
 - ⏸ PAUSED HERE (2026-11-25): next = Step 9 Explain-it run (walk the whole path, 2–3 "what would you reach for" questions). Runner: `cd ~/Desktop/projects/actions-runner && ./run.sh` (only needed for deploys). VM may lose network after PC sleep → `multipass stop --force vps && multipass start vps`.
 ### Step 9
+- Part 1 (request path): /etc/hosts ✓, api/web ✓, postgres + volume + backups ✓, api not published → PC can't reach it directly ✓. Firewall: first described SSH keys (who may log in) instead of ufw (which ports are open), fixed when asked ✓.
+- Mistake: called both nginx jobs "redirect". Redirect (301, 80 → 443) = the browser is told to go elsewhere and asks again; reverse proxy (`proxy_pass`) = nginx fetches from the container itself, browser never sees `api` (R100).
 ### Step 10
 ### Step 11
 
