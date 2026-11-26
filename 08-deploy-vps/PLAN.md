@@ -194,7 +194,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Part 3 (backups + reach-for): cron starts it, dump of postgres; volume alone is lost if the whole server dies → backups belong on ANOTHER server ✓ (own idea). Disk suspicion → check disk usage (command looked up, fine) ✓. Teammate leaves → remove their key from the server ✓. "Is the backup usable?": first only "check the folder"; when asked → test it (a restore) ✓; cron history only proves it RAN (R97 stays open). Step 9 done ✓.
 ### Step 10
 - Provider: DigitalOcean instead of Hetzner (Hetzner asked for ID verification), 1 GB droplet, same personal SSH key (a key identifies me, not a server). Network note: direct outbound port 22 is blocked, SSH to the VPS goes through the corporate proxy (ProxyCommand).
-- Mistake: typed the key file's path to see it → shell tried to EXECUTE it (`Permission denied`), then `sudo`. Reading a file = `cat <file>` (R101).
+- Mistake: typed the key file's path to see it → shell tried to EXECUTE it (`Permission denied`), then `sudo`. Reading a file = `cat <file>` (same as R82 in Step 2, streak stays 0).
 ### Step 11
 
 ---
