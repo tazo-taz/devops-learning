@@ -197,6 +197,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mistake: typed the key file's path to see it → shell tried to EXECUTE it (`Permission denied`), then `sudo`. Reading a file = `cat <file>` (same as R82 in Step 2, streak stays 0).
 - User `tazo` + sudo + key copied (`rsync --archive --chown`) ✓, login as tazo and `sudo whoami` = root ✓. Predict ✓: an open root session survives the sshd reload, only new logins are refused. DigitalOcean already had password login off (droplet created with a key). Billing: a powered-off droplet still costs, only Destroy stops it.
 - Mistake: session dropped and I typed the sshd command on my PC (R101). Added `Host do` to `~/.ssh/config` (proxy tunnel + `ServerAliveInterval 30`) → `ssh do`.
+- sshd drop-in `10-hardening.conf` (root login + passwords off) ✓ root refused; ufw deny in, allow 22/80/443 ✓ (predict ✓: 22 must be allowed BEFORE `ufw enable`). Docker via `get.docker.com` (no proxy/CA needed: the droplet is directly on the internet ✓), `usermod -aG docker`, re-login → Docker 29, Compose v5.8 ✓. `ssh do` typed ON the server / `sudo do` → the alias lives in my PC's `~/.ssh/config`, and `ssh` is the program (R101).
+- DNS: own domain at Namecheap, added `A` record `devops` → droplet IP (root record left alone); visible on Google + Cloudflare resolvers ✓.
 ### Step 11
 
 ---
