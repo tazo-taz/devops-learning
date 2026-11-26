@@ -4,7 +4,7 @@
 **You learn:** Linux servers, SSH, firewalls, domains and SSL, backups, and zero-touch deployment.
 **Done when:**
 - [x] (local) pushing to main updates the site in the local VM at `https://devops.test` with no manual step
-- [ ] (live) the same works on a rented VPS at `https://<your domain>` with a real Let's Encrypt cert, then the VPS is deleted
+- [x] (live) the same works on a rented VPS at `https://<your domain>` with a real Let's Encrypt cert, then the VPS is deleted
 - [x] the server only accepts SSH with a key (no passwords, no root login) and the firewall only lets in 22, 80, 443
 - [x] a daily `pg_dump` backup exists, and you restored one into an EMPTY database and saw the users come back
 
@@ -209,7 +209,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🔨 Mini break-it: site dead on 80 + 443 → found nginx stopped, started it ✓. Why ✓: `unless-stopped` doesn't restart a container that was stopped by hand.
 ### Step 11
 - `CHEATSHEET.md` created (23 questions, 🧪/📄 labels). Deploy job is OFF (repo variable `DEPLOY_ENABLED` not set).
-- ⏸ PAUSED HERE (2026-11-26): next = (1) user answers `CHEATSHEET.md` → "check"; (2) cleanup still open: DESTROY the DigitalOcean droplet (still billing!), delete the `devops` A record at Namecheap, delete the `read:packages` token, remove `Host do` from `~/.ssh/config`, decide about the local VM + self-hosted runner; (3) tick the "live" Done-when box, write the Summary, update ROADMAP → project 09.
+- ⏸ PAUSED HERE (2026-11-26): next = (1) user answers `CHEATSHEET.md` → "check"; (2) cleanup still open: droplet DESTROYED ✓ (2026-11-26) and `Host do` removed from `~/.ssh/config` ✓; still open: delete the `devops` A record at Namecheap, delete the `read:packages` token, decide about the local VM + self-hosted runner; (3) write the Summary, update ROADMAP → project 09.
 
 ---
 
