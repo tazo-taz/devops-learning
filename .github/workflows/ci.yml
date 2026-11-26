@@ -125,7 +125,7 @@ jobs:
   deploy:
     needs: smoke # only an image that passed the smoke test goes live
     if: github.ref == 'refs/heads/main' # tags make images but don't deploy (yet)
-    runs-on: self-hosted # the runner on MY PC: it can reach the private VM, GitHub's VMs can't
+    runs-on: ubuntu-latest # the VPS has a public IP, so GitHub's own VMs can reach it (the local VM needed my self-hosted runner)
     environment: production # secrets SSH_KEY / SSH_HOST / SSH_USER / SSH_KNOWN_HOSTS live here
     concurrency: production # two pushes close together → deploys run one after the other, never at once
     defaults:
@@ -153,8 +153,8 @@ jobs:
       - name: Copy compose files + nginx config to the server
         # no source code, no .env, no certs: only what `docker compose` needs to run the images
         run: |
-          scp $SSH_OPTS docker-compose.yaml docker-compose.prod.yaml docker-compose.ci.yaml "$TARGET:app/"
-          scp $SSH_OPTS -r nginx nginx-prod scripts "$TARGET:app/"
+          scp $SSH_OPTS docker-compose.yaml docker-compose.prod.yaml docker-compose.live.yaml docker-compose.ci.yaml "$TARGET:app/"
+          scp $SSH_OPTS -r nginx nginx-prod nginx-live scripts "$TARGET:app/"
 
       - name: Pull + start this commit's images
         # .env on the server = the CURRENT release: replace the two image lines, keep the secrets
@@ -170,8 +170,8 @@ jobs:
       - name: Check the live site
         run: |
           for i in $(seq 1 30); do
-            # --noproxy: devops.test is on my LAN, the corporate proxy can't reach it
-            if curl -fsS --noproxy '*' --resolve devops.test:443:${{ secrets.SSH_HOST }} https://devops.test/api/users; then
+            # real DNS name + real Let's Encrypt cert: no --resolve, no -k needed
+            if curl -fsS https://devops.tazojanelidze.xyz/api/users; then
               echo; echo "live site OK"; break
             fi
             [ "$i" = 30 ] && { echo "site not answering"; exit 1; }
