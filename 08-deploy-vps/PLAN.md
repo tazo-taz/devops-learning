@@ -193,6 +193,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Part 2 (deploy path): image → GHCR tagged with the commit sha ✓; self-hosted runner on my PC connects OUT to GitHub and takes the deploy job (GitHub never connects in) ✓; job SSHes into the VM with the separate CI key from GitHub secrets ✓; on the VM `docker compose pull` + `up -d` (forgot at first, but it is the same as the rollback: older sha in `.env` → pull → up -d, not `restart`) ✓.
 - Part 3 (backups + reach-for): cron starts it, dump of postgres; volume alone is lost if the whole server dies → backups belong on ANOTHER server ✓ (own idea). Disk suspicion → check disk usage (command looked up, fine) ✓. Teammate leaves → remove their key from the server ✓. "Is the backup usable?": first only "check the folder"; when asked → test it (a restore) ✓; cron history only proves it RAN (R97 stays open). Step 9 done ✓.
 ### Step 10
+- Provider: DigitalOcean instead of Hetzner (Hetzner asked for ID verification), 1 GB droplet, same personal SSH key (a key identifies me, not a server). Network note: direct outbound port 22 is blocked, SSH to the VPS goes through the corporate proxy (ProxyCommand).
+- Mistake: typed the key file's path to see it → shell tried to EXECUTE it (`Permission denied`), then `sudo`. Reading a file = `cat <file>` (R101).
 ### Step 11
 
 ---
