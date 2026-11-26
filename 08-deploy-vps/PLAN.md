@@ -190,6 +190,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 9
 - Part 1 (request path): /etc/hosts ✓, api/web ✓, postgres + volume + backups ✓, api not published → PC can't reach it directly ✓. Firewall: first described SSH keys (who may log in) instead of ufw (which ports are open), fixed when asked ✓.
 - Mistake: called both nginx jobs "redirect". Redirect (301, 80 → 443) = the browser is told to go elsewhere and asks again; reverse proxy (`proxy_pass`) = nginx fetches from the container itself, browser never sees `api` (R100).
+- Part 2 (deploy path): image → GHCR tagged with the commit sha ✓; self-hosted runner on my PC connects OUT to GitHub and takes the deploy job (GitHub never connects in) ✓; job SSHes into the VM with the separate CI key from GitHub secrets ✓; on the VM `docker compose pull` + `up -d` (forgot at first, but it is the same as the rollback: older sha in `.env` → pull → up -d, not `restart`) ✓.
 ### Step 10
 ### Step 11
 
