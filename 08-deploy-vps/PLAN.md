@@ -208,6 +208,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint why ✓: port 80 stays open for the http → https redirect AND for Let's Encrypt's check at every renewal (closed → renewals fail → cert expires in ≤ 90 days).
 - 🔨 Mini break-it: site dead on 80 + 443 → found nginx stopped, started it ✓. Why ✓: `unless-stopped` doesn't restart a container that was stopped by hand.
 ### Step 11
+- `CHEATSHEET.md` created (23 questions, 🧪/📄 labels). Deploy job is OFF (repo variable `DEPLOY_ENABLED` not set).
+- ⏸ PAUSED HERE (2026-11-26): next = (1) user answers `CHEATSHEET.md` → "check"; (2) cleanup still open: DESTROY the DigitalOcean droplet (still billing!), delete the `devops` A record at Namecheap, delete the `read:packages` token, remove `Host do` from `~/.ssh/config`, decide about the local VM + self-hosted runner; (3) tick the "live" Done-when box, write the Summary, update ROADMAP → project 09.
 
 ---
 
