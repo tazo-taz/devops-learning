@@ -85,7 +85,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ## Step 9 — Explain-it run
 - Walk through the whole path: name lookup → firewall → nginx 80/443 → api/web → postgres; CI → GHCR → SSH → `compose pull/up`; cron → `pg_dump`. For each part say WHAT it does, WHY it's there, WHAT breaks without it. Plus 2–3 "what would you reach for when X?" questions. Lookups are fine.
-- [ ] ✅ Checkpoint: every part explained; only wrong ideas / unknown features → `REVIEW.md`.
+- [x] ✅ Checkpoint: every part explained; only wrong ideas / unknown features → `REVIEW.md`.
 
 # Phase B — go live (rented VPS, a few hours)
 
@@ -191,6 +191,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Part 1 (request path): /etc/hosts ✓, api/web ✓, postgres + volume + backups ✓, api not published → PC can't reach it directly ✓. Firewall: first described SSH keys (who may log in) instead of ufw (which ports are open), fixed when asked ✓.
 - Mistake: called both nginx jobs "redirect". Redirect (301, 80 → 443) = the browser is told to go elsewhere and asks again; reverse proxy (`proxy_pass`) = nginx fetches from the container itself, browser never sees `api` (R100).
 - Part 2 (deploy path): image → GHCR tagged with the commit sha ✓; self-hosted runner on my PC connects OUT to GitHub and takes the deploy job (GitHub never connects in) ✓; job SSHes into the VM with the separate CI key from GitHub secrets ✓; on the VM `docker compose pull` + `up -d` (forgot at first, but it is the same as the rollback: older sha in `.env` → pull → up -d, not `restart`) ✓.
+- Part 3 (backups + reach-for): cron starts it, dump of postgres; volume alone is lost if the whole server dies → backups belong on ANOTHER server ✓ (own idea). Disk suspicion → check disk usage (command looked up, fine) ✓. Teammate leaves → remove their key from the server ✓. "Is the backup usable?": first only "check the folder"; when asked → test it (a restore) ✓; cron history only proves it RAN (R97 stays open). Step 9 done ✓.
 ### Step 10
 ### Step 11
 
