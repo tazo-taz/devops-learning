@@ -35,7 +35,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: `prometheus.yml` = a list of jobs/targets + `scrape_interval`. Prometheus calls each target, stores the numbers with a timestamp (a time series). Its UI: **Status → Targets** (UP/DOWN + last error), and a query box for **PromQL**. `up` = 1/0 per target, made by Prometheus itself.
 - 🤔 Predict: we run 2 api copies behind nginx. If Prometheus scrapes `http://nginx/api/metrics`, what is wrong with the numbers it gets?
 - New `docker-compose.monitoring.yaml` with `prometheus` + `prometheus/prometheus.yml`, open the UI, look at Targets, try `up`, `http_requests_total`, `rate(http_requests_total[1m])`.
-- [ ] ✅ Checkpoint: the api target is UP and `rate(...)` shows traffic I create with a `curl` loop. Why: pull instead of push, what does Prometheus learn for free from a failed scrape?
+- [x] ✅ Checkpoint: the api target is UP and `rate(...)` shows traffic I create with a `curl` loop. Why: pull instead of push, what does Prometheus learn for free from a failed scrape?
 - 🔨 Mini break-it:
 
 ## Step 3 — Exporters: Postgres and the host
@@ -104,6 +104,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 2
 - Predict ✓: behind nginx each scrape lands on a different copy, and every copy has its OWN counter → the numbers jump. So Prometheus scrapes each copy directly.
 - Claude wrote: `docker-compose.monitoring.yaml` (prometheus v3.5.0, UI on `127.0.0.1:9090`, `promdata` volume) + `prometheus/prometheus.yml` (jobs `prometheus` and `api`; `dns_sd_configs` → one target per api copy).
+- Checkpoint ✓ (2026-11-27): 2 targets up, `rate(http_requests_total[1m])` ≈ 1.6/s during a curl loop. Confusion: read the `status="304"` line (0, old browser requests) instead of the `status="200"` one: every label combination is its OWN series with its own rate.
+- Mistake: checkpoint why: "when Prometheus is down no data is shown". The point of PULL: Prometheus calls the target, so a failed scrape itself is information → `up` = 0 for that target, without the (dead) app having to report anything (R106).
 ### Step 3
 ### Step 4
 ### Step 5
