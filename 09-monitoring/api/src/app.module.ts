@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { HealthController } from './health.controller.js';
+import { MetricsController } from './metrics.controller.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module.js';
 
@@ -20,7 +21,7 @@ import { UsersModule } from './users/users.module.js';
     }),
     UsersModule,
   ],
-  controllers: [AppController, HealthController, WhoamiController],
+  controllers: [AppController, HealthController, WhoamiController, MetricsController],
   providers: [AppService],
 })
 export class AppModule {}

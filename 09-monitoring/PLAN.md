@@ -96,6 +96,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Q2 (R93, half): recreate ✓ (`up -d` alone is enough, no `down`), and good catch that a volume can keep the old password (Grafana stores the admin password in its DB at FIRST start, like Postgres). Missing: `restart` = the SAME container, its env was fixed at creation.
 - Mistake: Q3 (R28 ✗): `exec node-exporter bash` → Alpine has no bash, use `sh`. Also `apk` not `apt`, musl not glibc, no curl by default.
 ### Step 1
+- Q from warm-up: "if Docker opens ports itself, why allow 80/443 in ufw?" → for nginx in Docker those two rules really change nothing. ufw protects what runs ON THE HOST: sshd (22), Certbot `--standalone` (80), anything installed without Docker, and the default deny for all of it. And `restart` ✓ now: same container, old config.
+- Mistake: predict: said the counter keeps counting after a restart. It is in the process's memory → 0 again; `rate()` handles the reset (R105).
+- Claude wrote: `prom-client` added, `api/src/metrics.ts` (registry, default Node metrics, `http_requests_total` counter, `http_request_duration_seconds` histogram, middleware that labels by route PATTERN), `api/src/metrics.controller.ts` (`GET /metrics`), one `app.use(metricsMiddleware)` line in `main.ts`. Build, lint, test green on the host; not yet run in Docker (Docker Desktop was off).
 ### Step 2
 ### Step 3
 ### Step 4
