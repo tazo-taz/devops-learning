@@ -31,12 +31,12 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: `curl localhost/api/metrics` (or the api port) shows `http_requests_total` growing after a few requests. Why: why a counter + `rate()` instead of the app calculating "requests per second" itself?
 - 🔨 Mini break-it: api restarted → the two counted requests vanished from `/metrics`. ✔ (with a hint)
 
-## Step 2 — Prometheus scrapes it
+## Step 2 — Prometheus scrapes it ✔
 - Concept: `prometheus.yml` = a list of jobs/targets + `scrape_interval`. Prometheus calls each target, stores the numbers with a timestamp (a time series). Its UI: **Status → Targets** (UP/DOWN + last error), and a query box for **PromQL**. `up` = 1/0 per target, made by Prometheus itself.
 - 🤔 Predict: we run 2 api copies behind nginx. If Prometheus scrapes `http://nginx/api/metrics`, what is wrong with the numbers it gets?
 - New `docker-compose.monitoring.yaml` with `prometheus` + `prometheus/prometheus.yml`, open the UI, look at Targets, try `up`, `http_requests_total`, `rate(http_requests_total[1m])`.
 - [x] ✅ Checkpoint: the api target is UP and `rate(...)` shows traffic I create with a `curl` loop. Why: pull instead of push, what does Prometheus learn for free from a failed scrape?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: Prometheus UI hangs → container paused. ✔ (no hint)
 
 ## Step 3 — Exporters: Postgres and the host
 - Concept: Postgres and Linux don't speak Prometheus. An **exporter** = a small program next to them that translates: `postgres-exporter` (connections, DB size, locks), `node-exporter` (CPU, RAM, disk, network of the HOST; needs host `/proc` + `/sys` mounted). Each is one more scrape target. (cAdvisor = per-container numbers; good to know.)
@@ -106,6 +106,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Claude wrote: `docker-compose.monitoring.yaml` (prometheus v3.5.0, UI on `127.0.0.1:9090`, `promdata` volume) + `prometheus/prometheus.yml` (jobs `prometheus` and `api`; `dns_sd_configs` → one target per api copy).
 - Checkpoint ✓ (2026-11-27): 2 targets up, `rate(http_requests_total[1m])` ≈ 1.6/s during a curl loop. Confusion: read the `status="304"` line (0, old browser requests) instead of the `status="200"` one: every label combination is its OWN series with its own rate.
 - Mistake: checkpoint why: "when Prometheus is down no data is shown". The point of PULL: Prometheus calls the target, so a failed scrape itself is information → `up` = 0 for that target, without the (dead) app having to report anything (R106).
+- 🔨 Mini break-it (`docker compose pause prometheus`): found `Up (Paused)` alone, no hint → `unpause` (R52 ✓, streak 2 → Mastered).
 ### Step 3
 ### Step 4
 ### Step 5
