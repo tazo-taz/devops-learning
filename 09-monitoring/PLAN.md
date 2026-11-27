@@ -42,7 +42,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Concept: Postgres and Linux don't speak Prometheus. An **exporter** = a small program next to them that translates: `postgres-exporter` (connections, DB size, locks), `node-exporter` (CPU, RAM, disk, network of the HOST; needs host `/proc` + `/sys` mounted). Each is one more scrape target. (cAdvisor = per-container numbers; good to know.)
 - 🤔 Predict: node-exporter runs in a container. Without any mounts, WHOSE CPU and disk does it report?
 - Add both exporters + scrape jobs, a read-only monitoring user for Postgres, find `pg_stat_activity_count` and `node_filesystem_avail_bytes`.
-- [ ] ✅ Checkpoint: 3+ targets UP; I can show DB connections and free disk in PromQL. Why: why a separate DB user for the exporter?
+- [x] ✅ Checkpoint: 3+ targets UP; I can show DB connections and free disk in PromQL. Why: why a separate DB user for the exporter?
 - 🔨 Mini break-it:
 - 🔨 Mini break-it:
 
@@ -110,6 +110,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 3
 - Predict ✓: without mounts node-exporter reports its OWN container's view (disk, network). So it gets the host's `/` mounted read-only + `pid: host`. Note: exporters are their own services, not something run inside the api container. On Docker Desktop the "host" is Docker Desktop's Linux VM, not my real PC (on a real server = the server).
 - Claude wrote: `postgres-exporter` + `node-exporter` services, scrape jobs `postgres` (9187) and `node` (9100), `EXPORTER_PASSWORD` in `.env.example`.
+- Checkpoint ✓ (2026-11-27): 4 targets up (`api`, `prometheus`, `postgres`, `node`); `pg_stat_activity_count` = 24 series (one per database + state), `node_filesystem_avail_bytes` = 9 (one per filesystem).
+- Checkpoint why: asked "why does the exporter need pg at all?" → it has no other source: it LOGS IN to Postgres and runs SELECTs on the statistics views (`pg_stat_activity`, `pg_stat_database`), then prints the result as `/metrics`. Own user = least privilege: `pg_monitor` can read statistics, not the tables; the app's user can read and delete all data (R107).
 ### Step 4
 ### Step 5
 ### Step 6
