@@ -24,12 +24,12 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ## Step 0 — Warm-up (no notes) ✔
 - 3 recall questions in chat: 2 from project 8, 1 open `REVIEW.md` item. Update streaks.
 
-## Step 1 — A `/metrics` endpoint in the api
+## Step 1 — A `/metrics` endpoint in the api ✔
 - Concept: the app counts things itself and shows them as plain text at `/metrics` (Prometheus format). Types: **counter** (only goes up: requests, errors), **gauge** (up and down: memory, open connections), **histogram** (how long things took, in buckets). Labels split one metric (`method`, `route`, `status`). `prom-client` also gives default Node metrics (CPU, memory, event loop).
 - 🤔 Predict: `http_requests_total` is a counter and shows 5000. The api restarts. What does it show now, and is that a problem for a "requests per second" graph?
 - Claude adds `prom-client`, a metrics module (request counter + duration histogram) and `GET /metrics`. I `curl` it and read the output.
-- [ ] ✅ Checkpoint: `curl localhost/api/metrics` (or the api port) shows `http_requests_total` growing after a few requests. Why: why a counter + `rate()` instead of the app calculating "requests per second" itself?
-- 🔨 Mini break-it:
+- [x] ✅ Checkpoint: `curl localhost/api/metrics` (or the api port) shows `http_requests_total` growing after a few requests. Why: why a counter + `rate()` instead of the app calculating "requests per second" itself?
+- 🔨 Mini break-it: api restarted → the two counted requests vanished from `/metrics`. ✔ (with a hint)
 
 ## Step 2 — Prometheus scrapes it
 - Concept: `prometheus.yml` = a list of jobs/targets + `scrape_interval`. Prometheus calls each target, stores the numbers with a timestamp (a time series). Its UI: **Status → Targets** (UP/DOWN + last error), and a query box for **PromQL**. `up` = 1/0 per target, made by Prometheus itself.
@@ -99,6 +99,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Q from warm-up: "if Docker opens ports itself, why allow 80/443 in ufw?" → for nginx in Docker those two rules really change nothing. ufw protects what runs ON THE HOST: sshd (22), Certbot `--standalone` (80), anything installed without Docker, and the default deny for all of it. And `restart` ✓ now: same container, old config.
 - Mistake: predict: said the counter keeps counting after a restart. It is in the process's memory → 0 again; `rate()` handles the reset (R105).
 - Claude wrote: `prom-client` added, `api/src/metrics.ts` (registry, default Node metrics, `http_requests_total` counter, `http_request_duration_seconds` histogram, middleware that labels by route PATTERN), `api/src/metrics.controller.ts` (`GET /metrics`), one `app.use(metricsMiddleware)` line in `main.ts`. Build, lint, test green on the host; not yet run in Docker (Docker Desktop was off).
+- Checkpoint ✓ (2026-11-27): `/users` 200 and `unmatched` 404 each counted once. User noticed by himself that `/api/metrics` is PUBLIC through nginx (fixed in Step 7). The "why rate()" question was unclear to him (not a mistake) → explained: the app only adds 1; Prometheus picks the window later; a missed scrape loses nothing.
+- 🔨 Mini break-it (`docker compose restart api`): needed the hint "where does the counter live + compare STATUS in `compose ps`" → api `Up 5 minutes`, the rest longer → restarted → counters in memory start at 0 (R105 again, streak stays 0). Also visible in `/metrics` itself: `process_start_time_seconds`.
 ### Step 2
 ### Step 3
 ### Step 4
