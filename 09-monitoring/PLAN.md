@@ -21,7 +21,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ---
 
-## Step 0 — Warm-up (no notes)
+## Step 0 — Warm-up (no notes) ✔
 - 3 recall questions in chat: 2 from project 8, 1 open `REVIEW.md` item. Update streaks.
 
 ## Step 1 — A `/metrics` endpoint in the api
@@ -92,6 +92,9 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ## Notes / lessons learned
 ### Step 0
+- Mistake: Q1 (R85 ✗): said Grafana on `3000:3000` is safe because ufw doesn't allow 3000. A published Docker port skips ufw (Docker's own iptables rules come first) → reachable. No `ports:` or `127.0.0.1:3000:3000`.
+- Q2 (R93, half): recreate ✓ (`up -d` alone is enough, no `down`), and good catch that a volume can keep the old password (Grafana stores the admin password in its DB at FIRST start, like Postgres). Missing: `restart` = the SAME container, its env was fixed at creation.
+- Mistake: Q3 (R28 ✗): `exec node-exporter bash` → Alpine has no bash, use `sh`. Also `apk` not `apt`, musl not glibc, no curl by default.
 ### Step 1
 ### Step 2
 ### Step 3
