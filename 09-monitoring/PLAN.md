@@ -108,6 +108,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Mistake: checkpoint why: "when Prometheus is down no data is shown". The point of PULL: Prometheus calls the target, so a failed scrape itself is information → `up` = 0 for that target, without the (dead) app having to report anything (R106).
 - 🔨 Mini break-it (`docker compose pause prometheus`): found `Up (Paused)` alone, no hint → `unpause` (R52 ✓, streak 2 → Mastered).
 ### Step 3
+- Predict ✓: without mounts node-exporter reports its OWN container's view (disk, network). So it gets the host's `/` mounted read-only + `pid: host`. Note: exporters are their own services, not something run inside the api container. On Docker Desktop the "host" is Docker Desktop's Linux VM, not my real PC (on a real server = the server).
+- Claude wrote: `postgres-exporter` + `node-exporter` services, scrape jobs `postgres` (9187) and `node` (9100), `EXPORTER_PASSWORD` in `.env.example`.
 ### Step 4
 ### Step 5
 ### Step 6

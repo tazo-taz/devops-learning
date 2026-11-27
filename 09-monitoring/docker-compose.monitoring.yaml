@@ -12,5 +12,27 @@ services:
       - promdata:/prometheus # the stored metrics survive a recreate
     restart: unless-stopped
 
+  # translates Postgres' own statistics (connections, DB size, locks) into /metrics on port 9187
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.17.1
+    environment:
+      DATA_SOURCE_URI: postgres:5432/${DB_NAME}?sslmode=disable
+      DATA_SOURCE_USER: exporter # its own read-only user, NOT the app's user
+      DATA_SOURCE_PASS: ${EXPORTER_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # translates the HOST's numbers (CPU, RAM, disk, network) into /metrics on port 9100
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    command:
+      - --path.rootfs=/host # read disk info from the mounted host root, not from its own container
+    pid: host # see the host's processes
+    volumes:
+      - /:/host:ro # the host's whole filesystem, read-only
+    restart: unless-stopped
+
 volumes:
   promdata:
