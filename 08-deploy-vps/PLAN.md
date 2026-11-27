@@ -209,6 +209,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🔨 Mini break-it: site dead on 80 + 443 → found nginx stopped, started it ✓. Why ✓: `unless-stopped` doesn't restart a container that was stopped by hand.
 ### Step 11
 - `CHEATSHEET.md` created (23 questions, 🧪/📄 labels). Deploy job is OFF (repo variable `DEPLOY_ENABLED` not set).
+- Mistake: cheat sheet checked 2026-11-27: 13 of 23 answers + 7 command rows got a 💡 (docker group, ufw vs Docker ports, ACME challenge, redirect vs proxy, pipefail, restore test, `docker history` / `inspect`). REVIEW: new R102–R104, R31 streak 1, the rest updated.
 - ⏸ PAUSED HERE (2026-11-26): next = (1) user answers `CHEATSHEET.md` → "check"; (2) cleanup still open: droplet DESTROYED ✓ (2026-11-26) and `Host do` removed from `~/.ssh/config` ✓; still open: delete the `devops` A record at Namecheap, delete the `read:packages` token, decide about the local VM + self-hosted runner; (3) write the Summary, update ROADMAP → project 09.
 
 ---
