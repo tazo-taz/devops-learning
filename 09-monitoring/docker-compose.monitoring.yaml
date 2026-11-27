@@ -1,0 +1,16 @@
+# the monitoring stack, added on top of the app's compose files (same network, so it can reach `api`)
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "127.0.0.1:9090:9090" # UI only from this machine (a plain 9090:9090 would skip ufw, R85)
+    volumes:
+      - ./prometheus:/etc/prometheus:ro # the config, from git
+      - promdata:/prometheus # the stored metrics survive a recreate
+    restart: unless-stopped
+
+volumes:
+  promdata:

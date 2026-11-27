@@ -102,6 +102,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint ✓ (2026-11-27): `/users` 200 and `unmatched` 404 each counted once. User noticed by himself that `/api/metrics` is PUBLIC through nginx (fixed in Step 7). The "why rate()" question was unclear to him (not a mistake) → explained: the app only adds 1; Prometheus picks the window later; a missed scrape loses nothing.
 - 🔨 Mini break-it (`docker compose restart api`): needed the hint "where does the counter live + compare STATUS in `compose ps`" → api `Up 5 minutes`, the rest longer → restarted → counters in memory start at 0 (R105 again, streak stays 0). Also visible in `/metrics` itself: `process_start_time_seconds`.
 ### Step 2
+- Predict ✓: behind nginx each scrape lands on a different copy, and every copy has its OWN counter → the numbers jump. So Prometheus scrapes each copy directly.
+- Claude wrote: `docker-compose.monitoring.yaml` (prometheus v3.5.0, UI on `127.0.0.1:9090`, `promdata` volume) + `prometheus/prometheus.yml` (jobs `prometheus` and `api`; `dns_sd_configs` → one target per api copy).
 ### Step 3
 ### Step 4
 ### Step 5

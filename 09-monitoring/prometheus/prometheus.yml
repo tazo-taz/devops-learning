@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s # how often Prometheus calls every target
+
+scrape_configs:
+  # Prometheus watching itself
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # the api, asked DIRECTLY on the Docker network (not through nginx).
+  # A DNS lookup of `api` returns one IP per running copy, so every copy becomes its own target.
+  - job_name: api
+    metrics_path: /metrics
+    dns_sd_configs:
+      - names: ["api"]
+        type: A
+        port: 3000
