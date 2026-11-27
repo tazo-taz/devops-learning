@@ -43,7 +43,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - 🤔 Predict: node-exporter runs in a container. Without any mounts, WHOSE CPU and disk does it report?
 - Add both exporters + scrape jobs, a read-only monitoring user for Postgres, find `pg_stat_activity_count` and `node_filesystem_avail_bytes`.
 - [x] ✅ Checkpoint: 3+ targets UP; I can show DB connections and free disk in PromQL. Why: why a separate DB user for the exporter?
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: `pg_stat_activity_count` empty → exporter's DB password changed in Postgres. ✔ (no hint)
 - 🔨 Mini break-it:
 
 ## Step 4 — Grafana dashboard
@@ -112,6 +112,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Claude wrote: `postgres-exporter` + `node-exporter` services, scrape jobs `postgres` (9187) and `node` (9100), `EXPORTER_PASSWORD` in `.env.example`.
 - Checkpoint ✓ (2026-11-27): 4 targets up (`api`, `prometheus`, `postgres`, `node`); `pg_stat_activity_count` = 24 series (one per database + state), `node_filesystem_avail_bytes` = 9 (one per filesystem).
 - Checkpoint why: asked "why does the exporter need pg at all?" → it has no other source: it LOGS IN to Postgres and runs SELECTs on the statistics views (`pg_stat_activity`, `pg_stat_database`), then prints the result as `/metrics`. Own user = least privilege: `pg_monitor` can read statistics, not the tables; the app's user can read and delete all data (R107).
+- Question (good one): shouldn't `CREATE USER exporter` be scripted? Yes: init script in `/docker-entrypoint-initdb.d` (runs once on an empty DB) or a provisioning tool; not a TypeORM migration (password in git). `pg_monitor` = built-in read-only role for statistics, no insert/update, not even SELECT on my tables.
+- 🔨 Mini break-it 1 (`ALTER USER exporter PASSWORD ...` in Postgres): found `password authentication failed` in the exporter's logs, saw `.env` was right → "someone changed it in the DB" ✓ no hint. Lesson: the TARGET stayed UP (the exporter itself answers), only `pg_up` = 0 → `up` = 1 does not mean the thing behind an exporter is fine.
 ### Step 4
 ### Step 5
 ### Step 6
