@@ -38,13 +38,13 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - [x] ✅ Checkpoint: the api target is UP and `rate(...)` shows traffic I create with a `curl` loop. Why: pull instead of push, what does Prometheus learn for free from a failed scrape?
 - 🔨 Mini break-it: Prometheus UI hangs → container paused. ✔ (no hint)
 
-## Step 3 — Exporters: Postgres and the host
+## Step 3 — Exporters: Postgres and the host ✔
 - Concept: Postgres and Linux don't speak Prometheus. An **exporter** = a small program next to them that translates: `postgres-exporter` (connections, DB size, locks), `node-exporter` (CPU, RAM, disk, network of the HOST; needs host `/proc` + `/sys` mounted). Each is one more scrape target. (cAdvisor = per-container numbers; good to know.)
 - 🤔 Predict: node-exporter runs in a container. Without any mounts, WHOSE CPU and disk does it report?
 - Add both exporters + scrape jobs, a read-only monitoring user for Postgres, find `pg_stat_activity_count` and `node_filesystem_avail_bytes`.
 - [x] ✅ Checkpoint: 3+ targets UP; I can show DB connections and free disk in PromQL. Why: why a separate DB user for the exporter?
 - 🔨 Mini break-it: `pg_stat_activity_count` empty → exporter's DB password changed in Postgres. ✔ (no hint)
-- 🔨 Mini break-it:
+- 🔨 Mini break-it: node target DOWN while the container is `Up` → container off the compose network. ✔ (with hints)
 
 ## Step 4 — Grafana dashboard
 - Concept: Grafana = a UI over data sources (Prometheus now, Loki later). Dashboard = panels, each panel = one query. Provisioning = data sources + dashboards as FILES in git (not clicked together and lost with the volume). The four numbers to watch: rate, errors, duration (RED) + resources.
@@ -114,6 +114,8 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 - Checkpoint why: asked "why does the exporter need pg at all?" → it has no other source: it LOGS IN to Postgres and runs SELECTs on the statistics views (`pg_stat_activity`, `pg_stat_database`), then prints the result as `/metrics`. Own user = least privilege: `pg_monitor` can read statistics, not the tables; the app's user can read and delete all data (R107).
 - Question (good one): shouldn't `CREATE USER exporter` be scripted? Yes: init script in `/docker-entrypoint-initdb.d` (runs once on an empty DB) or a provisioning tool; not a TypeORM migration (password in git). `pg_monitor` = built-in read-only role for statistics, no insert/update, not even SELECT on my tables.
 - 🔨 Mini break-it 1 (`ALTER USER exporter PASSWORD ...` in Postgres): found `password authentication failed` in the exporter's logs, saw `.env` was right → "someone changed it in the DB" ✓ no hint. Lesson: the TARGET stayed UP (the exporter itself answers), only `pg_up` = 0 → `up` = 1 does not mean the thing behind an exporter is fine.
+- Question: how does Prometheus know where to connect? → `prometheus.yml` `scrape_configs` targets (`node-exporter:9100`), service names resolved by Docker's DNS on the shared network; plain HTTP GET `/metrics`, it never reads logs.
+- Mistake: 🔨 Mini break-it 2 (`docker network disconnect`): no idea at first; then guessed "node-exporter has no `ports:`" (not needed between containers, R108). Good own clue: the PORTS column in `compose ps` was empty (normally `9100/tcp`). With the `docker inspect ... .NetworkSettings.Networks` hint → "not in the same network" ✓. Fix: `up -d --force-recreate node-exporter`.
 ### Step 4
 ### Step 5
 ### Step 6
