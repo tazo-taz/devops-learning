@@ -98,7 +98,7 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 
 ## Step 11 — Cleanup + cheat sheet
 - Stop/delete the local VM (`multipass delete --purge vps`) if not needed for project 9, remove the self-hosted runner, revoke unused tokens/keys. `CHEATSHEET.md` as questions; I answer, Claude puts 💡 suggestions in the file.
-- [ ] ✅ Checkpoint: "Done when" boxes ticked, Summary written, ROADMAP row updated.
+- [x] ✅ Checkpoint: "Done when" boxes ticked, Summary written, ROADMAP row updated.
 
 ---
 
@@ -210,9 +210,19 @@ Every step ends with 🔨 mini break-it(s): Claude quietly breaks one thing and 
 ### Step 11
 - `CHEATSHEET.md` created (23 questions, 🧪/📄 labels). Deploy job is OFF (repo variable `DEPLOY_ENABLED` not set).
 - Mistake: cheat sheet checked 2026-11-27: 13 of 23 answers + 7 command rows got a 💡 (docker group, ufw vs Docker ports, ACME challenge, redirect vs proxy, pipefail, restore test, `docker history` / `inspect`). REVIEW: new R102–R104, R31 streak 1, the rest updated. Round 2: 5 + 15 fixed by the user, answers written in for the rest (user asked).
-- ⏸ PAUSED HERE (2026-11-26): next = (1) user answers `CHEATSHEET.md` → "check"; (2) cleanup still open: droplet DESTROYED ✓ (2026-11-26) and `Host do` removed from `~/.ssh/config` ✓; still open: delete the `devops` A record at Namecheap, delete the `read:packages` token, decide about the local VM + self-hosted runner; (3) write the Summary, update ROADMAP → project 09.
+- Closed 2026-11-27. Cleanup done: droplet destroyed, `Host do` removed from `~/.ssh/config`. Still to do BY HAND (not blocking): delete the `devops` A record at Namecheap, delete the `read:packages` token on GitHub. Local VM `vps` + self-hosted runner: kept for now, decide in project 09.
 
 ---
 
 ## Summary
-(written at the end)
+Finished 2026-11-27. The app from project 7 now runs on a server, first on a local Multipass VM (Phase A), then for a few hours on a real DigitalOcean droplet at `https://devops.tazojanelidze.xyz` (Phase B, destroyed after).
+- **Server:** own user with sudo, SSH with keys only (no root, no passwords), `ufw` deny incoming except 22/80/443, Docker installed, the `docker` group treated as root.
+- **Deploy:** the server never builds. It holds only compose files + nginx config + `.env` (secrets + which image sha to run) and pulls the images CI tested from GHCR with a read-only token. The `deploy` job (after `smoke`, only main, `concurrency: production`) SSHes in with its OWN key, checks the server's host key, copies the files, sets the sha, `pull` + `up -d`. Rollback = put the old sha back and `up -d` again.
+- **HTTPS:** nginx on 80 (redirect + ACME challenge) and 443 (cert + the old routes). Locally a cert from our own CA, live a real Let's Encrypt cert with Certbot (webroot, renew + nginx reload hook).
+- **Backups:** `scripts/backup.sh` (`set -euo pipefail`, `pg_dump | gzip`, keep 7) from cron, and one restore into an empty DB.
+
+Biggest lessons: timeout = firewall/network, "Permission denied" = sshd; Docker-published ports skip ufw; one bad line stops ALL of nginx; `restart` never applies a new image/env, `up -d` does; a backup you never restored isn't a backup; read the prompt before a system command.
+
+Weak spots → REVIEW: R80–R104 (host keys, key file ownership, docker group, ufw vs Docker, CA trust, ACME challenge, redirect vs proxy, pipefail, cron environment, restore tests).
+
+**Next topic suggestion:** project 09 makes this stack observable: a `/metrics` endpoint in the api, Prometheus scraping it plus exporters for Postgres and the host, Grafana dashboards, Loki for the container logs, and an "API is down" alert to Telegram. So far every problem was found by hand with `logs` / `ps` / `df -h`; now the system should tell us first.

@@ -1,0 +1,8 @@
+# LIVE server only (rented VPS). Layered AFTER docker-compose.prod.yaml via COMPOSE_FILE in the server's .env:
+#   COMPOSE_FILE=docker-compose.yaml:docker-compose.prod.yaml:docker-compose.live.yaml:docker-compose.ci.yaml
+services:
+  nginx:
+    volumes:
+      - ./nginx-live:/etc/nginx/conf.d:ro # same target → replaces the ./nginx-prod mount
+      - /etc/letsencrypt:/etc/letsencrypt:ro # the whole folder: live/ holds symlinks into archive/
+      - /var/www/certbot:/var/www/certbot:ro # Certbot writes challenge tokens here, nginx serves them on port 80

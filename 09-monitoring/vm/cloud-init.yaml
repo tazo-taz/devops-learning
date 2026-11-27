@@ -1,0 +1,5 @@
+#cloud-config
+# Runs ONCE on the VM's first boot (same thing a VPS provider does with its "add SSH key" box).
+# Adds my PUBLIC key to the default user's ~/.ssh/authorized_keys, so I can log in without a password.
+ssh_authorized_keys:
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcWikGY5YbXYvMzGUZDV7M+414vNoKBsvRHl7cErZ4/ tazo-laptop

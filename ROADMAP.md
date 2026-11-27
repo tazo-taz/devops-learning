@@ -13,8 +13,8 @@ Each project builds on the one before. All use **NestJS + PostgreSQL**, so in th
 | 5  | Dev vs. prod environments            | Junior       | `05-dev-vs-prod/`       | ✅ 2026-11-09 |
 | 6  | Nginx reverse proxy + multiple services | Junior    | `06-nginx-proxy/`       | ✅ 2026-11-11 |
 | 7  | CI/CD with GitHub Actions            | → Mid        | `07-ci-cd/`             | ✅ 2026-11-13 |
-| 8  | Deploy to a real server              | → Mid        | `08-deploy-vps/`        | ⏳ next       |
-| 9  | Monitoring and logging               | → Mid        | `09-monitoring/`        | ⬜            |
+| 8  | Deploy to a real server              | → Mid        | `08-deploy-vps/`        | ✅ 2026-11-27 |
+| 9  | Monitoring and logging               | → Mid        | `09-monitoring/`        | ⏳ next       |
 | 10 | Microservices + Kubernetes           | → Mid        | `10-k8s-microservices/` | ⬜            |
 
 Folder names are planned; create each when the project starts.

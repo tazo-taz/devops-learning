@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      target: prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+  # every long-running service must come back after a reboot / crash (default policy = "no")
+  postgres:
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+  nginx:
+    restart: unless-stopped
+    ports:
+      - "443:443" # added to the base file's 80:80 (lists are merged)
+    volumes:
+      - ./nginx-prod:/etc/nginx/conf.d:ro # same target → replaces the base ./nginx mount
+      - ./certs:/etc/nginx/certs:ro # cert + key, copied by hand, git-ignored
+  web:
+    restart: unless-stopped
+  # migrate: NO restart, it runs once and exits on purpose
